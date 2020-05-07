@@ -160,7 +160,7 @@
             for (var i = 0; i < data.data.annexs.length; i++) {
               this.fileList.push({
                 name: data.data.annexs[i].fileRealName,
-                url: 'http://' + data.data.annexs[i].fileOriginalName
+                url: data.data.annexs[i].fileOriginalName
               })
             }
           }
@@ -241,10 +241,13 @@
         for(var i=0;i<this.fileList.length;i++){
           if(this.fileList[i].response!=undefined){
             this.dataForm.annexs.push({fileRealName:this.fileList[i].name,fileOriginalName:this.fileList[i].response.url})
+            console.log(this.fileList[i].response)
           }else{
             this.dataForm.annexs.push({fileRealName:this.fileList[i].name,fileOriginalName:this.fileList[i].url})
+            console.log(this.dataForm.annexs)
           }
         }
+        console.log(this.dataForm.annexs)
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({

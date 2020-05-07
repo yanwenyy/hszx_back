@@ -20,6 +20,16 @@
       <el-form-item label="广告名称" prop="name">
         <el-input v-model="dataForm.name" placeholder="请输入广告名称" style="width:500px"></el-input>
       </el-form-item>
+      <el-form-item label="展示平台" prop="showPlatform">
+        <el-select v-model="dataForm.showPlatform" :disabled="type" @change="platformPage($event)" placeholder="请选择展示平台">
+          <el-option
+            v-for="item in showPla"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="展示页面" prop="showPlace">
         <el-select v-model="dataForm.showPlace" placeholder="请选择展示页面">
           <el-option
@@ -71,6 +81,7 @@
         headers: {
           token: this.$cookie.get('token')
         },
+        type:false,
         titleTxt:"新增",
         disabledStatus:true,
         imageUrl: '',
@@ -81,6 +92,10 @@
           {value:3, label:'我的报告-个人/员工'},
           {value:4, label:'我的报告-管理层'}
         ],
+        showPla:[
+          {value:2, label:'行业辅导'},
+          {value:1, label:'新政辅导'}
+        ],
         jumpLink:[
           {value:1, label:'不跳转'},
           {value:2, label:'H5'},
@@ -88,6 +103,7 @@
         dataForm:{
           imgUrl:'',
           name:'',
+          showPlatform:'',
           showPlace:'',
           sort:'',
           jumpType:'',
@@ -99,6 +115,9 @@
           ],
           name: [
             { required: true, message: '广告名称不能为空', trigger: 'blur' }
+          ],
+          showPlatform: [
+            { required: true, message: '展示平台不能为空', trigger: 'blur' }
           ],
           showPlace: [
             { required: true, message: '展示位置不能为空', trigger: 'blur' }
@@ -128,13 +147,19 @@
           method: 'get',
           params: this.$http.adornParams()
         }).then(({data}) => {
+          this.type=true
           this.dataForm.imgUrl=data.data.imgUrl
           this.dataForm.name=data.data.name
+          this.dataForm.showPlatform=data.data.showPlatform
           this.dataForm.showPlace=data.data.showPlace
           this.dataForm.sort=data.data.sort
           this.dataForm.jumpType=data.data.jumpType
           this.dataForm.jumpUrl=data.data.jumpUrl
           this.imageUrl = 'http://'+data.data.imgUrl
+          if(this.dataForm.showPlatform==2){
+            this.showPos=[{value:1, label:'首页'}]
+            this.dataForm.showPlace=1
+          }
         })
       }
 
@@ -142,6 +167,19 @@
     methods:{
       closePage:function () {
         this.removeTabHandle(this.$store.state.common.mainTabsActiveName)
+      },
+      platformPage(event){
+        if(event==2){
+          this.showPos=[{value:1, label:'首页'}]
+          this.dataForm.showPlace=1
+        }else{
+          this.showPos=[
+            {value:1, label:'首页'},
+            {value:2, label:'评估页'},
+            {value:3, label:'我的报告-个人/员工'},
+            {value:4, label:'我的报告-管理层'}
+          ]
+        }
       },
       getJumpType(event){
         if(event==1){
@@ -175,6 +213,7 @@
                 'id': this.id || undefined,
                 'imgUrl':this.dataForm.imgUrl,
                 'name':this.dataForm.name,
+                'showPlatform':this.dataForm.showPlatform,
                 'showPlace':this.dataForm.showPlace,
                 'sort':this.dataForm.sort,
                 'jumpType':this.dataForm.jumpType,
@@ -187,7 +226,7 @@
                   type: 'success',
                   duration: 1500,
                   onClose: () => {
-                    this.$router.push({"name": "banner-banner"})
+                    this.closePage()
                   }
                 })
 

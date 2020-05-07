@@ -23,6 +23,9 @@
       },
       val:{
         type: Number
+      },
+      url:{
+        type: String
       }
     },
     data() {
@@ -33,9 +36,10 @@
     mounted() {
       //初始化UE
       const _this = this;
+
       this.editor = UE.delEditor(this.id);
       this.editor = UE.getEditor(this.id,{
-        serverUrl: window.SITE_CONFIG['baseUrl']+"/ueditor/exec?"+document.cookie
+        serverUrl: window.SITE_CONFIG['baseUrl']+"/ueditor/exec?token="+_this.$cookie.get('token')
       });
 
       this.editor.ready(function() {
@@ -98,6 +102,36 @@
             }).then(({data}) => {
               if(data.code==200&&data.data!=null){
                 _this.editor.setContent( data.data.opinion)
+              }
+            })
+          }else if(_this.modelname=='imputation'){
+            _this.$http({
+              url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
+              method: 'get',
+              params: _this.$http.adornParams()
+            }).then(({data}) => {
+              if(data.code==200&&data.data!=null){
+                _this.editor.setContent( data.data.content)
+              }
+            })
+          }else if(_this.modelname=='relative_expert'){
+            _this.$http({
+              url: _this.$http.adornUrl(`/biz/trpolicyrelativeexpert/updateinfo/${_this.val}`),
+              method: 'get',
+              params: _this.$http.adornParams()
+            }).then(({data}) => {
+              if(data.code==200&&data.data!=null){
+                _this.editor.setContent( data.data.content)
+              }
+            })
+          }else if(_this.modelname==undefined&&_this.url!=undefined){
+            _this.$http({
+              url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
+              method: 'get',
+              params: _this.$http.adornParams()
+            }).then(({data}) => {
+              if(data.code==200&&data.data!=null){
+                _this.editor.setContent( data.data.content)
               }
             })
           }

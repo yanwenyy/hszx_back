@@ -23,7 +23,6 @@
             node-key="menuId"
             ref="menuListTree"
             @current-change="menuListTreeCurrentChangeHandle"
-            :default-expand-all="true"
             :highlight-current="true"
             :expand-on-click-node="false">
           </el-tree>

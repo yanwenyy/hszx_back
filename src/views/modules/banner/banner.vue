@@ -19,6 +19,17 @@
         <template slot-scope="scope"><span>{{scope.$index+(pageIndex - 1) * pageSize + 1}} </span></template>
       </el-table-column>
       <el-table-column
+        prop="showPlatform"
+        header-align="center"
+        align="center"
+        width="80"
+        label="展示平台">
+        <template slot-scope="scope">
+          <span v-if="scope.row.showPlatform==1">新政辅导</span>
+          <span v-if="scope.row.showPlatform==2">行业辅导</span>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="showPlace"
         header-align="center"
         align="center"

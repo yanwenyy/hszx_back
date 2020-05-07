@@ -5,6 +5,9 @@
         <el-button v-if="isAuth('biz:company:save')" type="warning" @click="$router.push({ name: 'companyManage-add' })" >新增</el-button>
       </el-form-item>
       <el-form-item>
+        <el-input v-model="dataForm.uuid" placeholder="企业ID" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
         <el-input v-model="dataForm.companyName" placeholder="企业名称" clearable></el-input>
       </el-form-item>
       <el-form-item>
@@ -110,7 +113,7 @@
       @selection-change="selectionChangeHandle"
       style="width: 100%;">
       <el-table-column
-        type="index"
+        prop="uuid"
         header-align="center"
         align="center"
         label="ID">
@@ -227,6 +230,7 @@
     data () {
       return {
         dataForm: {
+          uuid:'',
           companyName: '',
           companyNature: '',
           trade: '',
@@ -288,16 +292,17 @@
           params: this.$http.adornParams({
             'pageNum': this.pageIndex,
             'pageSize': this.pageSize,
-            'companyName': this.dataForm.companyName,
-            'companyNature': this.dataForm.companyNature,
-            'trade': this.dataForm.trade,
-            'companyScale': this.dataForm.companyScale,
-            'city': this.dataForm.city,
-            'vipStatus': this.dataForm.vipStatus,
-            'vaildStartTime': this.dataForm.vaildStartTime,
-            'vaildLastTime': this.dataForm.vaildLastTime,
-            'createStart': this.dataForm.createStart,
-            'createEnd': this.dataForm.createEnd,
+            'uuid':this.dataForm.uuid || undefined,
+            'companyName': this.dataForm.companyName || undefined,
+            'companyNature': this.dataForm.companyNature || undefined,
+            'trade': this.dataForm.trade || undefined,
+            'companyScale': this.dataForm.companyScale || undefined,
+            'city': this.dataForm.city || undefined,
+            'vipStatus': this.dataForm.vipStatus || undefined,
+            'vaildStartTime': this.dataForm.vaildStartTime || undefined,
+            'vaildLastTime': this.dataForm.vaildLastTime || undefined,
+            'createStart': this.dataForm.createStart || undefined,
+            'createEnd': this.dataForm.createEnd || undefined,
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
@@ -380,6 +385,7 @@
       // 重置
       resetForm(formName) {
         this.dataForm={
+          uuid:'',
           phone: '',
           realName: '',
           userName: '',

@@ -7,6 +7,12 @@
       <el-form-item>
         <el-input v-model="dataForm.uuid" placeholder="企业ID" clearable></el-input>
       </el-form-item>
+     <el-form-item>
+        <el-input  placeholder="管理层姓名" v-model="dataForm.realName" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-input  placeholder="手机号" v-model="dataForm.phone" clearable></el-input>
+      </el-form-item>
       <el-form-item>
         <el-select
           v-model="dataForm.vipStatus"
@@ -66,6 +72,9 @@
       <el-form-item>
         <el-button type="primary" @click="getDataList()">查询</el-button>
       </el-form-item>
+      <el-form-item>
+      <el-button type="warning" @click="excelDown()">导出</el-button>
+      </el-form-item>
     </el-form>
     <el-table
       :data="dataList"
@@ -91,6 +100,18 @@
         header-align="center"
         align="center"
         label="企业名称">
+      </el-table-column>
+      <el-table-column
+        prop="realName"
+        header-align="center"
+        align="center"
+        label="管理层姓名">
+      </el-table-column>
+      <el-table-column
+        prop="phone"
+        header-align="center"
+        align="center"
+        label="手机号">
       </el-table-column>
       <el-table-column
         prop="vipStatus"
@@ -140,6 +161,8 @@
     data () {
       return {
         dataForm: {
+          phone:'',
+          realName:'',
           uuid:'',
           companyName:'',
           vipStatus:'',
@@ -184,6 +207,48 @@
       })
     },
     methods: {
+      //导出
+      excelDown(){
+        this.$http({
+          url: this.$http.adornUrl('/biz/try/export/tryList'),
+          method: 'get',
+          responseType: "blob",
+          params: this.$http.adornParams({
+            'phone':this.dataForm.phone || undefined,
+            'realName':this.dataForm.realName || undefined,
+            'uuid':this.dataForm.uuid || undefined,
+            'companyName':this.dataForm.companyName || undefined,
+            'vipStatus':this.dataForm.vipStatus || undefined,
+            'tryNum':this.dataForm.tryNum || undefined,
+            'ifTrial':this.dataForm.ifTrial || undefined,
+            'tryStartTime1':this.dataForm.tryStartTime1 || undefined,
+            'tryStartTime2':this.dataForm.tryStartTime2 || undefined,
+            'createTime1':this.dataForm.createTime1 || undefined,
+            'createTime2':this.dataForm.createTime2 || undefined
+          })
+        }).then(res => {
+          let content = res.data;
+          let blob = new Blob([content]);
+          let fileName = "试用期管理导出.xlsx";
+          if ("download" in document.createElement("a")) {
+            // 非IE下载
+            let elink = document.createElement("a");
+            elink.download = fileName;
+            elink.style.display = "none";
+            elink.href = URL.createObjectURL(blob);
+            document.body.appendChild(elink);
+            elink.click();
+            URL.revokeObjectURL(elink.href); // 释放URL 对象
+            document.body.removeChild(elink);
+          } else {
+            // IE10+下载
+            navigator.msSaveBlob(blob, fileName);
+          }
+          this.$message.success("生成文件成功");
+        }).catch(err => {
+          this.$message.error("服务器出现问题,请稍后再试");
+        })
+      },
       // 获取数据列表
       getDataList () {
         this.dataListLoading = true
@@ -203,6 +268,8 @@
           params: this.$http.adornParams({
             'pageNum': String(this.pageIndex),
             'pageSize': String(this.pageSize),
+            'phone':this.dataForm.phone || undefined,
+            'realName':this.dataForm.realName || undefined,
             'uuid':this.dataForm.uuid || undefined,
             'companyName':this.dataForm.companyName || undefined,
             'vipStatus':this.dataForm.vipStatus || undefined,

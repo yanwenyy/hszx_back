@@ -121,7 +121,6 @@ export default {
   components: {UEditor},
   data(){
     let validateTrade = (rule, value, callback) => {
-      // 当跳转链接为空值且为必填时，抛出错误，反之通过校验
       if (this.dataForm.trades.length==0 && this.isRequired) {
         callback(new Error("适用行业不能为空"));
       } else {
@@ -223,7 +222,7 @@ export default {
           for (var i = 0; i < data.data.annexs.length; i++) {
             this.fileList.push({
               name: data.data.annexs[i].fileRealName,
-              url: 'http://' + data.data.annexs[i].fileOriginalName
+              url:  data.data.annexs[i].fileOriginalName
             })
           }
         }
@@ -312,14 +311,18 @@ export default {
           }
         }
         var tradeArr=this.dataForm.trades
-        this.dataForm.annexs=[]
+        this.dataForm.annexs=[];
         for(var i=0;i<this.fileList.length;i++){
           if(this.fileList[i].response!=undefined){
+
             this.dataForm.annexs.push({fileRealName:this.fileList[i].name,fileOriginalName:this.fileList[i].response.url})
+            console.log(this.fileList[i].response)
           }else{
             this.dataForm.annexs.push({fileRealName:this.fileList[i].name,fileOriginalName:this.fileList[i].url})
+            console.log(this.dataForm.annexs)
           }
         }
+        console.log(this.dataForm.annexs)
         if (valid) {
           this.$http({
             url: this.$http.adornUrl(`/biz/policy/${!this.dataForm.id ? 'save' : 'update'}`),

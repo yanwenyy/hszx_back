@@ -54,6 +54,9 @@
         <el-button type="primary" @click="getDataList()">搜索</el-button>
         <el-button type="info" @click="resetForm()" >重置</el-button>
       </el-form-item>
+      <el-form-item>
+        <el-button type="warning" @click="excelDown()">导出</el-button>
+      </el-form-item>
     </el-form>
     <el-table
       :data="dataList"
@@ -188,13 +191,52 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        addOrUpdateVisible: false,
+        isToken:this.$cookie.get('token')
       }
     },
     activated () {
       this.getDataList()
     },
     methods: {
+      excelDown(){
+        this.$http({
+          url: this.$http.adornUrl('/biz/coach/userCoachTotalScoreList'),
+          method: 'post',
+          responseType: "blob",
+          data: this.$http.adornData({
+            "realName":this.dataForm.realName || undefined,
+            "phone":this.dataForm.phone || undefined,
+            "role":this.dataForm.role || undefined,
+            "packNum":this.dataForm.packNum || undefined,
+            "companyName":this.dataForm.companyName || undefined,
+            "companyId":this.dataForm.companyId || undefined,
+            "annualResults":this.dataForm.annualResults || undefined
+          })
+        }).then(res => {
+            let content = res.data;
+            let blob = new Blob([content]);
+            let fileName = "用户辅导总成绩导出.xlsx";
+            if ("download" in document.createElement("a")) {
+              // 非IE下载
+              let elink = document.createElement("a");
+              elink.download = fileName;
+              elink.style.display = "none";
+              elink.href = URL.createObjectURL(blob);
+              document.body.appendChild(elink);
+              elink.click();
+              URL.revokeObjectURL(elink.href); // 释放URL 对象
+              document.body.removeChild(elink);
+            } else {
+              // IE10+下载
+              navigator.msSaveBlob(blob, fileName);
+            }
+            this.$message.success("生成文件成功");
+          }).catch(err => {
+              console.log(err);
+              this.$message.error("服务器出现问题,请稍后再试");
+            });
+      },
       //重置搜索条件
       resetForm(){
         this.dataForm={

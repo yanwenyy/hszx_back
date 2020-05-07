@@ -8,6 +8,16 @@
       <el-form-item label="广告名称" prop="name">
         <el-input v-model="dataForm.name" placeholder="请输入广告名称" :disabled="true" style="width:500px"></el-input>
       </el-form-item>
+      <el-form-item label="展示平台" prop="showPlatform">
+        <el-select v-model="dataForm.showPlatform" disabled placeholder="请选择展示平台">
+          <el-option
+            v-for="item in showPla"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="展示页面" prop="showPlace">
         <el-select v-model="dataForm.showPlace" disabled placeholder="请选择展示页面">
           <el-option
@@ -69,6 +79,10 @@
           {value:3, label:'我的报告-个人/员工'},
           {value:4, label:'我的报告-管理层'}
         ],
+        showPla:[
+          {value:2, label:'行业辅导'},
+          {value:1, label:'新政辅导'}
+        ],
         jumpLink:[
           {value:1, label:'不跳转'},
           {value:2, label:'H5'},
@@ -76,6 +90,7 @@
         dataForm:{
           imgUrl:'',
           name:'',
+          showPlatform:'',
           showPlace:'',
           sort:'',
           jumpType:'',
@@ -94,6 +109,7 @@
         }).then(({data}) => {
           this.dataForm.imgUrl=data.data.imgUrl
           this.dataForm.name=data.data.name
+          this.dataForm.showPlatform=data.data.showPlatform
           this.dataForm.showPlace=data.data.showPlace
           this.dataForm.sort=data.data.sort
           this.dataForm.jumpType=data.data.jumpType

@@ -29,11 +29,11 @@
               title=""
               trigger="hover">
               <!--正式-->
-              <img :src="'https://api.jieshuibao.com/showImg/question/'+picList.url" style="max-width:500px;max-height: 500px"/>
-              <img slot="reference" :src="'https://api.jieshuibao.com/showImg/question/'+picList.url" :alt="picList.url" style="max-height: 50px;max-width: 130px">
+              <!--<img :src="'https://api.jieshuibao.com/showImg/question/'+picList.url" style="max-width:500px;max-height: 500px"/>
+              <img slot="reference" :src="'https://api.jieshuibao.com/showImg/question/'+picList.url" :alt="picList.url" style="max-height: 50px;max-width: 130px">-->
               <!--测试-->
-              <!--<img :src="'http://test.jieshuibao.com//jsb_webserver/showImg/question/'+picList.url" style="max-width:500px;max-height: 500px"/>
-              <img slot="reference" :src="'http://test.jieshuibao.com//jsb_webserver/showImg/question/'+picList.url" :alt="picList.url" style="max-height: 50px;max-width: 130px">-->
+              <img :src="'http://test.jieshuibao.com//jsb_webserver/showImg/question/'+picList.url" style="max-width:500px;max-height: 500px"/>
+              <img slot="reference" :src="'http://test.jieshuibao.com//jsb_webserver/showImg/question/'+picList.url" :alt="picList.url" style="max-height: 50px;max-width: 130px">
             </el-popover>
           </div>
         </el-form-item>
