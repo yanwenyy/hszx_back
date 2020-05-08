@@ -9,6 +9,8 @@
         <el-select
           v-model="dataForm.coverType"
           clearable
+          disabled
+          @change="showImg($event)"
           placeholder="请选择封面版式" style="width: 220px">
           <el-option v-for="item in coverTypeList"
                      :label="item.name"
@@ -16,6 +18,44 @@
                      :key="item.id" >
           </el-option>
         </el-select>
+        <div style="margin-top: 20px">
+        <el-popover
+          placement="right"
+          width="630"
+          height="500"
+          style=""
+          trigger="click">
+          <h3 style="text-align: center">请选择新闻封面样式</h3>
+          <div style="display: inline-block;width: 300px;text-align: center;">
+            <img src="~@/assets/img/style1.png" width="290"></img>
+            <el-radio v-model="dataForm.coverType" label="1" style="margin: 15px 0">样式1</el-radio>
+          </div>
+          <div style="display: inline-block;width: 300px;text-align: center">
+            <img src="~@/assets/img/style1.png" width="290"></img>
+            <el-radio v-model="dataForm.coverType" label="2" style="margin: 15px 0">样式2</el-radio>
+          </div>
+          <div style="display: inline-block;width: 300px;text-align: center">
+            <img src="~@/assets/img/style3.png" width="290"></img>
+            <el-radio v-model="dataForm.coverType" label="3" style="margin: 15px 0">样式3</el-radio>
+          </div>
+          <el-button slot="reference">选择样式</el-button>
+        </el-popover>
+        </div>
+      </el-form-item>
+      <el-form-item label="封面图" prop="coverUrl" v-show="this.dataForm.coverType==1||this.dataForm.coverType==3">
+        <el-upload
+          :class="'avatar-uploader avatar-uploader'+this.dataForm.coverType"
+          :headers="headers"
+          accept="image/gif,image/jpeg,image/jpg,image/png"
+          :action="UploadUrl()"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload">
+          <img v-if="imageUrl" :src="imageUrl" class="avatar">
+          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        </el-upload>
+        <el-input type="text"  v-model="dataForm.coverUrl" style="padding: 0;margin: 0;height: 0;display: none"></el-input>
+        <span style="color: #ccc">提示：格式支持JPG/PNG/GIF，大小200K以内</span>
       </el-form-item>
       <el-form-item label="标题" prop="title">
         <el-input v-model="dataForm.title" clearable placeholder="请输入标题" style="width:500px"></el-input>
@@ -74,9 +114,16 @@
       <el-form-item label="状态" prop="ifShow" v-if="addHide==true">
         <el-input :value="dataForm.ifShow==0?'隐藏':'在线'" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
-      <el-form-item label="内容" prop="content">
+      <el-form-item prop="contentType" label="添加内容方式">
+        <el-radio  v-model="dataForm.contentType" label="1" style="margin-right:20px">公众号链接</el-radio>
+        <el-radio v-model="dataForm.contentType" label="2" style="margin-right:6px">富文本添加内容</el-radio>
+      </el-form-item>
+      <el-form-item prop="url" label="公众号链接" v-show="this.dataForm.contentType==1">
+        <el-input v-model="dataForm.url" style="width:500px"></el-input>
+      </el-form-item>
+      <el-form-item label="内容" prop="content" v-if="this.dataForm.contentType==2">
         <template>
-          <UEditor :key="'editor_risk-tips'" :val="dataForm.id" :url="'/biz/trtaxplan/info/'" :id='"editor_risk-tips"':index="0" :econtent="dataForm.content"  @func="editorContent" ></UEditor>
+          <UEditor :key="'editor_news-center'" :val="dataForm.id" :url="'/biz/trnewscenter/info/'" :id='"editor_news-center"':index="0" :econtent="dataForm.content"  @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">
@@ -96,24 +143,53 @@ export default {
     UEditor},
   data(){
     let validateTrade = (rule, value, callback) => {
-      // 当跳转链接为空值且为必填时，抛出错误，反之通过校验
+      // 当行业为空值且为必填时，抛出错误，反之通过校验
       if (value == "" && this.isHaveTo) {
         callback(new Error("行业不能为空"));
       } else {
         callback();
       }
     };
+    let validateImg = (rule, value, callback) => {
+      // 当行业为空值且为必填时，抛出错误，反之通过校验
+      if (value == "" && this.isHaveToImg) {
+        callback(new Error("封面图不能为空"));
+      } else {
+        callback();
+      }
+    };
+    let validateContent = (rule, value, callback) => {
+      // 当行业为空值且为必填时，抛出错误，反之通过校验
+      if (value == "" && this.isHaveContent) {
+        callback(new Error("内容不能为空"));
+      } else {
+        callback();
+      }
+    };
+    let validateUrl = (rule, value, callback) => {
+      // 当行业为空值且为必填时，抛出错误，反之通过校验
+      if (value == "" && this.isHaveUrl) {
+        callback(new Error("公众号链接不能为空"));
+      } else {
+        callback();
+      }
+    };
     return {
+      headers: {
+        token: this.$cookie.get('token')
+      },
       titleTxt:"新增",
       addHide:false,
       attributeShow:false,
-      coverTypeList:[{id:1,name:'样式1'},{id:2,name:'样式2'},{id:3,name:'样式3'}],
+      coverTypeList:[{id:'1',name:'样式1'},{id:'2',name:'样式2'},{id:'3',name:'样式3'}],
       userList:[],
       tradeList:[],
       attributeList:[],
+      imageUrl: '',
       dataForm:{
         ifPlatformAuthor:'1',
         id:parseInt(this.$route.query.id) || undefined,
+        coverType:'',
         title:'',
         content:'',
         lecturer:'',
@@ -121,10 +197,19 @@ export default {
         tradeid:'',
         creatTime:'',
         title:'',
+        coverUrl:'',
+        contentType:'',
+        url:'',
         sort:undefined,
         ifShow:''
       },
       dataRule:{
+        coverUrl:[
+          { validator:validateImg, trigger: 'blur' }
+        ],
+        coverType:[
+          { required: true, message: '请选择封面版式', trigger: 'blur' }
+        ],
         title: [
           { required: true, message: '标题不能为空', trigger: 'blur' }
         ],
@@ -137,8 +222,14 @@ export default {
         attributeid:[
           { required: true, message: '属性不能为空', trigger: 'blur' }
         ],
+        contentType:[
+          { required: true, message: '请选择添加内容方式', trigger: 'blur' }
+        ],
         content:[
-          {required: true, message: '内容不能为空', trigger: 'blur'}
+          {validator: validateContent, trigger: 'blur'}
+        ],
+        url:[
+          {validator: validateUrl, trigger: 'blur'}
         ]
       }
     }
@@ -183,7 +274,7 @@ export default {
     //详情
     if( this.dataForm.id!=undefined) {
       this.$http({
-        url: this.$http.adornUrl(`/biz/trtaxplan/info/${this.dataForm.id}`),
+        url: this.$http.adornUrl(`/biz/trnewscenter/info/${this.dataForm.id}`),
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
@@ -191,13 +282,26 @@ export default {
         this.addHide=true
         this.dataForm.tradeid=data.data.tradeid
         this.dataForm.attributeid=data.data.attributeid
+        if(data.data.attributeName=='行业新闻'){
+          this.attributeShow=true
+        }
         this.dataForm.title = data.data.title
         this.dataForm.sort = data.data.sort
         this.dataForm.lecturer=data.data.lecturer
         this.dataForm.ifPlatformAuthor=data.data.ifPlatformAuthor
         this.dataForm.creatTime = this.commonDate.formatTime('', '', data.data.creatTime)
-        this.dataForm.content=data.data.content
         this.dataForm.ifShow=data.data.ifShow
+        this.dataForm.coverType=data.data.coverType
+        if(this.dataForm.coverType!=2){
+          this.dataForm.coverUrl=data.data.coverUrl
+          this.imageUrl = 'http://'+data.data.coverUrl
+        }
+        this.dataForm.contentType=data.data.contentType
+        if(this.dataForm.contentType==2){
+          this.dataForm.content=data.data.content
+        }else{
+          this.dataForm.url=data.data.url
+        }
       })
     }
   },
@@ -212,9 +316,44 @@ export default {
         }
       }
       return false
+    },
+    isHaveToImg:function () {
+      if(this.dataForm.coverType!=2){
+        return true
+      }
+      return false
+    },
+    isHaveContent:function () {
+      if(this.dataForm.contentType==2){
+        return true
+      }
+      return false
+    },
+    isHaveUrl:function () {
+      if(this.dataForm.contentType==1){
+        return true
+      }
+      return false
     }
   },
   methods:{
+    UploadUrl:function(){
+      return this.$http.adornUrl(`/sys/oss/upload`)
+    },
+    handleAvatarSuccess(res, file) {
+      this.imageUrl = URL.createObjectURL(file.raw);
+      this.dataForm.coverUrl=res.url
+    },
+    beforeAvatarUpload(file) {
+      const isLt200KB = file.size / 1024 <200;
+      if (!isLt200KB) {
+        this.$message.error('上传图片大小不能超过 200KB!');
+      }
+      return isLt200KB;
+    },
+    showImg(e){
+
+    },
     getAttribute(e){
       let resultArr = this.attributeList.filter((item)=>{
         return item.id === e
@@ -237,18 +376,21 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
           if (valid) {
           this.$http({
-            url: this.$http.adornUrl(`/biz/trtaxplan/${!this.dataForm.id ? 'save' : 'update'}`),
+            url: this.$http.adornUrl(`/biz/trnewscenter/${!this.dataForm.id ? 'save' : 'update'}`),
             method: 'post',
             data: this.$http.adornData({
               'id': this.dataForm.id || undefined,
               'ifPlatformAuthor':this.dataForm.ifPlatformAuthor,
               'lecturer':this.dataForm.lecturer,
               'title': this.dataForm.title,
-              'tradeid': this.dataForm.tradeid,
+              'tradeid': this.dataForm.tradeid || undefined,
               'attributeid': this.dataForm.attributeid,
-              'content':this.dataForm.content,
-              'lecturer':this.dataForm.lecturer,
-              'sort':this.dataForm.sort || undefined
+              'sort':this.dataForm.sort || undefined,
+              'coverType':this.dataForm.coverType,
+              'coverUrl':this.dataForm.coverUrl || undefined,
+              'contentType':this.dataForm.contentType,
+              'url':this.dataForm.url || undefined,
+              'content':this.dataForm.content || undefined,
             })
           }).then(({data}) => {
             if (data && data.code == 200) {
@@ -278,5 +420,46 @@ export default {
   }
   .w-e-menu{
     z-index: 2 !important;
+  }
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
+  .avatar-uploader1  .avatar-uploader-icon{
+    width: 130px;
+    height: 100px;
+    line-height: 100px;
+  }
+  .avatar-uploader1  .avatar{
+    width: 130px;
+    height: 100px;
+  }
+  .avatar-uploader3  .avatar-uploader-icon{
+     width: 300px;
+     height: 100px;
+     line-height: 100px;
+   }
+  .avatar-uploader3  .avatar{
+    width: 300px;
+    height: 100px;
   }
 </style>
