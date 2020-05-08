@@ -165,7 +165,7 @@
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="$router.push({ name: 'news-center-record',query:{id:scope.row.id,title:scope.row.title} })">操作记录</el-button>
           <el-button type="text" size="small" v-if="isAuth('biz:trnewscenter:update')" @click="$router.push({ name: 'news-center-add-or-update',query:{id:scope.row.id} })">编辑</el-button>
-          <el-button type="text" size="small" v-if="isAuth('biz:trnewscenter:info')" @click="$router.push({ name: 'tax-plan-view',query:{id:scope.row.id} })">查看</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trnewscenter:info')" @click="$router.push({ name: 'news-center-view',query:{id:scope.row.id} })">查看</el-button>
           <el-button type="text" size="small" v-if="isAuth('biz:trnewscenter:delete')" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
