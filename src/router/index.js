@@ -104,6 +104,7 @@ const mainRoutes = {
     {path:'/tax-plan-view', component:_import('modules/tax-plan/view'), name:'tax-plan-view', meta:{title:'税收筹划查看',isTab: true }},
     {path:'/tax-plan-record', component:_import('modules/tax-plan/record'), name:'tax-plan-record', meta:{title:'税收筹划操作记录',isTab: true }},
     {path:'/news-center-add-or-update', component:_import('modules/news-center/add-or-update'), name:'news-center-add-or-update', meta:{title:'新闻中心新增or编辑',isTab: true }},
+    {path:'/news-center-view', component:_import('modules/news-center/view'), name:'news-center-view', meta:{title:'新闻中心查看',isTab: true }},
     {path:'/news-center-record', component:_import('modules/news-center/record'), name:'news-center-record', meta:{title:'新闻中心操作记录',isTab: true }},
     ],
   beforeEnter (to, from, next) {
