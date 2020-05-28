@@ -24532,8 +24532,20 @@
           var action = utils.formatUrl(imageActionUrl + (imageActionUrl.indexOf('?') == -1 ? '?' : '&') + params);
           var formData = new FormData();
           formData.append("upfile", form[0].files[0] );
+          function getCookie2(name){
+            var strcookie = document.cookie;//获取cookie字符串
+            var arrcookie = strcookie.split("; ");//分割
+            //遍历匹配
+            for ( var i = 0; i < arrcookie.length; i++) {
+              var arr = arrcookie[i].split("=");
+              if (arr[0] == name){
+                return arr[1];
+              }
+            }
+            return "";
+          }
           $.ajax({
-            url: window.SITE_CONFIG['baseUrl']+'ueditor/uploadimage?'+document.cookie,
+            url: window.SITE_CONFIG['baseUrl']+'ueditor/uploadimage?token='+getCookie2('token'),
             type: 'POST',
             cache: false,
             data: formData,

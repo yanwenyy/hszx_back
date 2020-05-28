@@ -256,7 +256,7 @@
         this.$http({
           url: this.$http.adornUrl('/biz/trnewscenter/updateSort'),
           method: 'post',
-          data: this.$http.adornData({id:id,sort:sort})
+          params: this.$http.adornParams({id:id,sort:sort})
         }).then(({data}) => {
           if (data && data.code == 200) {
             this.$message({
@@ -323,27 +323,33 @@
       },
       // 删除
       deleteHandle (id) {
-        this.$http({
-          url: this.$http.adornUrl('/biz/trnewscenter/delete'),
-          method: 'post',
-          data: this.$http.adornData(id,false)
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            this.$message({
-              message: '操作成功',
-              type: 'success',
-              duration: 1500,
-              onClose: () => {
-                this.getDataList()
-              }
-            })
-          } else {
-            if (data.message == undefined) {
-              this.$message.error(data.msg)
+        this.$confirm(`您确定要删除该条数据吗？`, ``, {
+          confirmButtonText: `确定`,
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/biz/trnewscenter/delete'),
+            method: 'post',
+            data: this.$http.adornData(id, false)
+          }).then(({data}) => {
+            if (data && data.code == 200) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
             } else {
-              this.$message.error(data.message)
+              if (data.message == undefined) {
+                this.$message.error(data.msg)
+              } else {
+                this.$message.error(data.message)
+              }
             }
-          }
+          })
         })
       },
       // 隐藏按钮--》在线

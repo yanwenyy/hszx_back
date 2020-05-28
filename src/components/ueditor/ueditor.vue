@@ -124,6 +124,26 @@
                 _this.editor.setContent( data.data.content)
               }
             })
+          }else if(_this.modelname=='good-class'){
+            _this.$http({
+              url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
+              method: 'get',
+              params: _this.$http.adornParams()
+            }).then(({data}) => {
+              if(data.code==200&&data.data!=null){
+                _this.editor.setContent( data.data.introduce)
+              }
+            })
+          }else if(_this.modelname=='broadcast'){
+            _this.$http({
+              url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
+              method: 'get',
+              params: _this.$http.adornParams()
+            }).then(({data}) => {
+              if(data.code==200&&data.data!=null){
+                _this.editor.setContent( data.data.introduce)
+              }
+            })
           }else if(_this.modelname==undefined&&_this.url!=undefined){
             _this.$http({
               url: _this.$http.adornUrl(`${_this.url}${_this.val}`),

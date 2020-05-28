@@ -18,8 +18,8 @@
       </el-form>
     </div>
     <el-form label-position="left" label-width="120px" :model="dataForm" ref="dataForm">
-      <el-form-item label="下线原因" prop="createDate">
-        <el-input type="textarea" v-model="dataForm.createDate" :disabled="true" style="width:500px"></el-input>
+      <el-form-item label="下线原因" prop="applyReason">
+        <el-input type="textarea" v-model="dataForm.applyReason" :disabled="true" style="width:500px"></el-input>
       </el-form-item>
 
       <el-form-item style="text-align: center;">

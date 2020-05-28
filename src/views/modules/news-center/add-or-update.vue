@@ -91,7 +91,7 @@
       </el-form-item>
       <el-form-item prop="lecturer" label="作者">
         <div style="margin-bottom:20px">
-          <el-radio  v-model="dataForm.ifPlatformAuthor" label="1" style="margin-right:20px">选择平台作者</el-radio>
+          <el-radio  v-model="dataForm.ifPlatformAuthor" @change="dataForm.lecturer=''" label="1" style="margin-right:20px">选择平台作者</el-radio>
           <el-select
             v-model="dataForm.lecturer"
             clearable
@@ -105,7 +105,7 @@
           </el-select>
         </div>
 
-        <el-radio v-model="dataForm.ifPlatformAuthor" label="0" style="margin-right:6px">填写非平台作者</el-radio>
+        <el-radio v-model="dataForm.ifPlatformAuthor" label="0" @change="dataForm.lecturer=''" style="margin-right:6px">填写非平台作者</el-radio>
         <el-input v-model="dataForm.lecturer" v-show='dataForm.ifPlatformAuthor==0' style="width:220px"></el-input>
       </el-form-item>
       <el-form-item label="创建时间" prop="creatTime" v-if="addHide==true">
@@ -186,6 +186,7 @@ export default {
       tradeList:[],
       attributeList:[],
       imageUrl: '',
+      ifTradeNews:undefined,
       dataForm:{
         ifPlatformAuthor:'1',
         id:parseInt(this.$route.query.id) || undefined,
@@ -285,6 +286,7 @@ export default {
         if(data.data.attributeName=='行业新闻'){
           this.attributeShow=true
         }
+        this.ifTradeNews=1
         this.dataForm.title = data.data.title
         this.dataForm.sort = data.data.sort
         this.dataForm.lecturer=data.data.lecturer
@@ -359,8 +361,10 @@ export default {
         return item.id === e
       });
       if(resultArr[0].name=='行业新闻'){
+        this.ifTradeNews=1
         this.attributeShow=true
       }else{
+        this.ifTradeNews=undefined
         this.attributeShow=false
       }
     },
@@ -391,6 +395,7 @@ export default {
               'contentType':this.dataForm.contentType,
               'url':this.dataForm.url || undefined,
               'content':this.dataForm.content || undefined,
+              'ifTradeNews':this.ifTradeNews
             })
           }).then(({data}) => {
             if (data && data.code == 200) {

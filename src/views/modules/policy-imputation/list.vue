@@ -187,7 +187,7 @@
         label="审核状态">
         <template slot-scope="scope">
           <span>{{scope.row.auditStatusName}}</span>
-          <i  class="el-icon-search" @click="$router.push({ name: 'policy-imputation-examine-record',query:{id:scope.row.id} })"></i>
+          <i  class="el-icon-search" v-if="isAuth('biz:trpolicy:auditRecord')" @click="$router.push({ name: 'policy-imputation-examine-record',query:{id:scope.row.id} })"></i>
         </template>
       </el-table-column>
       <el-table-column
@@ -197,13 +197,13 @@
         label="审核操作">
         <template slot-scope="scope">
           <div>
-            <el-button style="color:orange" type="text" size="mini" v-if="isAuth('biz:trpolicy:onlineApply')" @click="online(scope.row.id)" v-show="scope.row.policyStatus==0&&scope.row.passAndE!=1">申请上线</el-button>
+            <el-button style="color:#1e88e5" type="text" size="mini" v-if="isAuth('biz:trpolicy:onlineApply')" @click="online(scope.row.id)" v-show="scope.row.policyStatus==0&&scope.row.passAndE!=1">申请上线</el-button>
             <el-button style="color:orange" type="text" size="mini" v-if="isAuth('biz:trpolicy:updateApply')" v-show="scope.row.passAndE==1" @click="update(scope.row.id)">申请更新</el-button>
-            <el-button type="text" size="mini" v-show="scope.row.policyStatus==1&&scope.row.auditStatus!=2" v-if="isAuth('biz:trpolicy:offlineApply')" @click="offline(scope.row.id)">申请下线</el-button>
+            <el-button type="text" style="color:#000" size="mini" v-show="scope.row.policyStatus==1&&scope.row.auditStatus!=2" v-if="isAuth('biz:trpolicy:offlineApply')" @click="offline(scope.row.id)">申请下线</el-button>
           </div>
           <div>
-            <el-button style="color:orange" type="text" size="mini" @click="$router.push({ name: 'policy-imputation-examine-online',query:{id:scope.row.id} })" v-if="isAuth('biz:trpolicy:onlineAudit')" v-show="scope.row.policyStatus==0&&scope.row.auditStatus==2">上线审核</el-button>
-            <el-button style="color:orange" type="text" size="mini" @click="$router.push({ name: 'policy-imputation-examine-update',query:{id:scope.row.id} })" v-if="isAuth('biz:trpolicy:updateAudit')" v-show="scope.row.policyStatus==1&&scope.row.auditStatus==2&&scope.row.auditOperate==2">更新审核</el-button>
+            <el-button style="color:#67c23a" type="text" size="mini" @click="$router.push({ name: 'policy-imputation-examine-online',query:{id:scope.row.id} })" v-if="isAuth('biz:trpolicy:onlineAudit')" v-show="scope.row.policyStatus==0&&scope.row.auditStatus==2">上线审核</el-button>
+            <el-button style="color:red" type="text" size="mini" @click="$router.push({ name: 'policy-imputation-examine-update',query:{id:scope.row.id} })" v-if="isAuth('biz:trpolicy:updateAudit')" v-show="scope.row.policyStatus==1&&scope.row.auditStatus==2&&scope.row.auditOperate==2">更新审核</el-button>
             <el-button type="text" size="mini" v-if="isAuth('biz:trpolicy:offlineAudit')" v-show="scope.row.policyStatus==1&&scope.row.auditStatus==2&&scope.row.auditOperate==3" @click="$router.push({ name: 'policy-imputation-examine-offline',query:{id:scope.row.id} })">下线审核</el-button>
           </div>
         </template>
@@ -216,7 +216,7 @@
         width="200"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="$router.push({ name: 'policy-imputation-record',query:{id:scope.row.id} })">操作记录</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:operatelog:list')" @click="$router.push({ name: 'policy-imputation-record',query:{id:scope.row.id} })">操作记录</el-button>
           <el-button type="text" size="small" v-show="scope.row.auditStatus!=2" @click="$router.push({ name: 'policy-imputation-add-or-update',query:{id:scope.row.id} })">编辑</el-button>
           <el-button type="text" size="small" v-show="scope.row.auditStatus==2" @click="editHandle()">编辑</el-button>
           <el-button type="text" size="small" v-if="isAuth('biz:trpolicy:info')" @click="$router.push({ name: 'policy-imputation-view',query:{id:scope.row.id} })">查看</el-button>
@@ -257,7 +257,7 @@
         tradeList:[],
         taxList:[],
         timelinessList:[],
-        policyList:[{label:'在线',value:0},{label:'隐藏',value:1}],
+        policyList:[{label:'在线',value:'1'},{label:'隐藏',value:'0'}],
         examineList:[{label:'待审核',value:1},{label:'审核中',value:2},{label:'审核通过',value:4},{label:'审核未通过',value:3}],
         dataList: [],
         pageIndex: 1,

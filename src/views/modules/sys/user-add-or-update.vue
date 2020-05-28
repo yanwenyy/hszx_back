@@ -24,6 +24,12 @@
           <el-checkbox v-for="role in roleList" :key="role.roleId" :label="role.roleId">{{ role.roleName }}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
+      <!--<el-form-item label="专家" size="mini" prop="identity">
+        <el-radio-group v-model="dataForm.identity">
+          <el-radio :label="1">是</el-radio>
+          <el-radio :label="0">否</el-radio>
+        </el-radio-group>
+      </el-form-item>-->
       <el-form-item label="状态" size="mini" prop="status">
         <el-radio-group v-model="dataForm.status">
           <el-radio :label="0">禁用</el-radio>
@@ -86,7 +92,8 @@
           email: '',
           mobile: '',
           roleIdList: [],
-          status: 1
+          status: 1,
+          /*identity:'',*/
           /*companyId: 1,
           companyName: ''*/
         },
@@ -106,6 +113,9 @@
           mobile: [
             { validator: validateMobile, trigger: 'blur' }
           ]
+          /*identity: [
+            { required: true, message: '请选择专家', trigger: 'blur' }
+          ]*/
         }/*,
         companyList: [],
         companyListTreeProps: {
@@ -150,6 +160,7 @@
                 this.dataForm.mobile = data.user.mobile
                 this.dataForm.roleIdList = data.user.roleIdList
                 this.dataForm.status = data.user.status
+                /*this.dataForm.identity = data.user.identity*/
               }
             })
           }
@@ -170,7 +181,8 @@
                 'email': this.dataForm.email,
                 'mobile': this.dataForm.mobile,
                 'status': this.dataForm.status,
-                'roleIdList': this.dataForm.roleIdList,
+                'roleIdList': this.dataForm.roleIdList/*,
+                'identity':this.dataForm.identity*/
                 /*'companyId': this.dataForm.companyId*/
               })
             }).then(({data}) => {

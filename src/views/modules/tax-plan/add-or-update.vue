@@ -10,7 +10,7 @@
       </el-form-item>
       <el-form-item prop="lecturer" label="作者">
         <div style="margin-bottom:20px">
-          <el-radio  v-model="dataForm.ifPlatformAuthor" label="1" style="margin-right:20px">选择平台作者</el-radio>
+          <el-radio  v-model="dataForm.ifPlatformAuthor" @change="dataForm.lecturer=''" label="1" style="margin-right:20px">选择平台作者</el-radio>
           <el-select
             v-model="dataForm.lecturer"
             clearable
@@ -24,7 +24,7 @@
           </el-select>
         </div>
 
-        <el-radio v-model="dataForm.ifPlatformAuthor" label="0" style="margin-right:6px">填写非平台作者</el-radio>
+        <el-radio v-model="dataForm.ifPlatformAuthor" @change="dataForm.lecturer=''" label="0" style="margin-right:6px">填写非平台作者</el-radio>
         <el-input v-model="dataForm.lecturer" v-show='dataForm.ifPlatformAuthor==0' style="width:220px"></el-input>
       </el-form-item>
       <el-form-item label="行业" prop="tradeid">

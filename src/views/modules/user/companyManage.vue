@@ -55,14 +55,7 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-select v-model="dataForm.vipStatus" placeholder="问答剩余量">
-          <el-option
-            v-for="item in vipStatus"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-select>
+        <el-input v-model="dataForm.questionNum" placeholder="问答剩余量" clearable></el-input>
       </el-form-item>
       <el-form-item label="服务到期时间">
         <el-date-picker
@@ -240,7 +233,8 @@
           vaildStartTime: '',
           vaildLastTime: '',
           createStart: '',
-          createEnd: ''
+          createEnd: '',
+          questionNum:''
         },
         dataList: [],
         pageIndex: 1,
@@ -303,6 +297,7 @@
             'vaildLastTime': this.dataForm.vaildLastTime || undefined,
             'createStart': this.dataForm.createStart || undefined,
             'createEnd': this.dataForm.createEnd || undefined,
+            'questionNum':this.dataForm.questionNum || undefined
           })
         }).then(({data}) => {
           if (data && data.code == 200) {

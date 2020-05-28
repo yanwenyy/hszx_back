@@ -117,8 +117,8 @@ export default {
         type: 'warning'
       }).then(() => {
         this.$http({
-          url: this.$http.adornUrl(''),
-          method: 'post',
+          url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/applyDownlinePass/${this.dataForm.id}`),
+          method: 'GET',
           data: this.$http.adornData('', false)
         }).then(({data}) => {
           if (data && data.code == 200) {
@@ -127,7 +127,7 @@ export default {
               type: 'success',
               duration: 1500,
               onClose: () => {
-                this.getDataList()
+                this.closePage()
               }
             })
           } else {

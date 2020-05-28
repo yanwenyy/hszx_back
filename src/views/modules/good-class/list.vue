@@ -2,16 +2,13 @@
   <div class="mod-policy">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
-        <el-button type="warning" v-if="isAuth('biz:trtaxplan:save')" @click="$router.push({ name: 'tax-plan-add-or-update'})">新增</el-button>
+        <el-button type="warning" v-if="isAuth('biz:trgoodclass:save')" @click="$router.push({ name: 'good-class-add-or-update'})">新增</el-button>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="dataForm.id" placeholder="ID" clearable></el-input>
+        <el-input v-model="dataForm.id" placeholder="课程ID" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-input v-model="dataForm.title" placeholder="标题" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-input v-model="dataForm.lecturer" placeholder="作者" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-select
@@ -26,26 +23,7 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-select
-          v-model="dataForm.attributeid"
-          clearable
-          placeholder="属性" style="width: 150px">
-          <el-option v-for="item in attributeList"
-                     :label="item.name"
-                     :value="item.id"
-                     :key="item.id" >
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="创建时间">
-        <el-date-picker
-          v-model="dataForm.creatTime"
-          type="daterange"
-          range-separator="一"
-          value-format="yyyy-MM-dd"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期">
-        </el-date-picker>
+        <el-input v-model="dataForm.lecturerName" placeholder="讲师" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-select
@@ -58,6 +36,28 @@
                      :key="item.value">
           </el-option>
         </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-select
+          v-model="dataForm.ifFree"
+          clearable
+          placeholder="观看设置" style="width: 150px">
+          <el-option v-for="item in ifFreeList"
+                     :label="item.label"
+                     :value="item.value"
+                     :key="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="创建时间">
+        <el-date-picker
+          v-model="dataForm.creatTime"
+          type="daterange"
+          range-separator="一"
+          value-format="yyyy-MM-dd"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期">
+        </el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="getDataList()">搜索</el-button>
@@ -76,10 +76,10 @@
         header-align="center"
         align="center"
         width="80"
-        label="ID">
+        label="课程ID">
       </el-table-column>
       <el-table-column
-        prop="tradeName"
+        prop="tradeidName"
         header-align="center"
         align="center"
         label="行业">
@@ -91,16 +91,38 @@
         label="标题">
       </el-table-column>
       <el-table-column
-        prop="platformAuthorName"
+        prop="imgUrl"
         header-align="center"
         align="center"
-        label="作者">
+        width="150px"
+        label="封面图">
+        <template slot-scope="scope">
+          <el-popover
+            placement="right"
+            title=""
+            trigger="hover">
+            <img :src="'http://'+scope.row.coverUrl" style="max-width: 600px"/>
+            <img slot="reference" :src="'http://'+scope.row.coverUrl" :alt="scope.row.coverUrl" style="max-height: 50px;max-width: 130px">
+          </el-popover>
+        </template>
       </el-table-column>
       <el-table-column
-        prop="attributeName"
+        prop="lecturerName"
         header-align="center"
         align="center"
-        label="属性">
+        label="讲师">
+      </el-table-column>
+      <el-table-column
+        prop="ifFreeName"
+        header-align="center"
+        align="center"
+        label="观看设置">
+      </el-table-column>
+      <el-table-column
+        prop="lookNum"
+        header-align="center"
+        align="center"
+        label="观看数量">
       </el-table-column>
       <el-table-column
         prop="discussNum"
@@ -152,8 +174,8 @@
         align="center"
         label="状态">
         <template slot-scope="scope">
-          <el-button v-show="scope.row.ifShow==0" v-if="isAuth('biz:trtaxplan:toZai')" type="text" size="small" @click="hideToShow(scope.row.id)">隐藏</el-button>
-          <el-button v-show="scope.row.ifShow==1" v-if="isAuth('biz:trtaxplan:toCang')" type="text" size="small" @click="showToHide(scope.row.id)">在线</el-button>
+          <el-button v-show="scope.row.ifShow==0" v-if="isAuth('biz:trgoodclass:online')" type="text" size="small" @click="hideToShow(scope.row.id)">隐藏</el-button>
+          <el-button v-show="scope.row.ifShow==1" v-if="isAuth('biz:trgoodclass:hide')" type="text" size="small" @click="showToHide(scope.row.id)">在线</el-button>
         </template>
       </el-table-column>
       <el-table-column
@@ -163,10 +185,10 @@
         width="200"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="$router.push({ name: 'tax-plan-record',query:{id:scope.row.id,title:scope.row.title} })">操作记录</el-button>
-          <el-button type="text" size="small" v-if="isAuth('biz:trtaxplan:update')" @click="$router.push({ name: 'tax-plan-add-or-update',query:{id:scope.row.id} })">编辑</el-button>
-          <el-button type="text" size="small" v-if="isAuth('biz:trtaxplan:info')" @click="$router.push({ name: 'tax-plan-view',query:{id:scope.row.id} })">查看</el-button>
-          <el-button type="text" size="small" v-if="isAuth('biz:trtaxplan:delete')" @click="deleteHandle(scope.row.id)">删除</el-button>
+          <el-button type="text" size="small" @click="$router.push({ name: 'good-class-record',query:{id:scope.row.id,title:scope.row.title} })">操作记录</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trgoodclass:update')" @click="$router.push({ name: 'good-class-add-or-update',query:{id:scope.row.id} })">编辑</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trgoodclass:info')" @click="$router.push({ name: 'good-class-view',query:{id:scope.row.id} })">查看</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trgoodclass:delete')" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -190,14 +212,14 @@
         dataForm: {
           id:'',
           title:'',
-          platformAuthorName:'',
-          attributeid:'',
           creatTime:'',
           tradeid:'',
-          ifShow:''
+          ifShow:'',
+          lecturerName:'',
+          ifFree:''
         },
         tradeList:[],
-        attributeList:[],
+        ifFreeList:[{label:'免费',value:'0'},{label:'会员',value:'1'}],
         ifShowList:[{label:'隐藏',value:'0'},{label:'在线',value:'1'}],
         dataList: [],
         pageIndex: 1,
@@ -211,18 +233,6 @@
       this.getDataList()
     },
     mounted(){
-      //作者
-      this.$http({
-        url: this.$http.adornUrl('/biz/user/getIdentityList'),
-        method: 'get',
-        params: this.$http.adornParams({'identity':1})
-      }).then(({data}) => {
-        var dataList=[]
-        for( var i=0;i<data.length;i++){
-          dataList.push(data[i]);
-        }
-        this.userList = dataList
-      })
       //行业
       this.$http({
         url: this.$http.adornUrl('/biz/trade2/trade2ModelList'),
@@ -235,18 +245,6 @@
         }
         this.tradeList = dataList
       })
-      //属性
-      this.$http({
-        url: this.$http.adornUrl('/biz/attribute/attributeList'),
-        method: 'get',
-        params: this.$http.adornParams({module:2})
-      }).then(({data}) => {
-        var dataList=[]
-        for( var i=0;i<data.data.length;i++){
-          dataList.push(data.data[i]);
-        }
-        this.attributeList = dataList
-      })
     },
     methods: {
       sortShow(index){
@@ -254,9 +252,9 @@
       },
       sortUpdate(index,id,sort){
         this.$http({
-          url: this.$http.adornUrl('/biz/trtaxplan/updateSort'),
+          url: this.$http.adornUrl('/biz/trgoodclass/updateSort'),
           method: 'post',
-          params: this.$http.adornParams({id:id,sort:sort})
+          data: this.$http.adornData({id:id,sort:sort})
         }).then(({data}) => {
           if (data && data.code == 200) {
             this.$message({
@@ -281,11 +279,11 @@
         this.dataForm={
           id:'',
           title:'',
-          lecturer:'',
-          attributeid:'',
           creatTime:'',
           tradeid:'',
-          ifShow:''
+          ifShow:'',
+          lecturerName:'',
+          ifFree:''
         }
       },
       confirmFn(title,content,confirmButtonText,ajaxUrl,ids){
@@ -323,42 +321,15 @@
       },
       // 删除
       deleteHandle (id) {
-        this.$confirm(`您确定要删除该条数据吗？`, ``, {
-          confirmButtonText: `确定`,
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.$http({
-            url: this.$http.adornUrl('/biz/trtaxplan/delete'),
-            method: 'post',
-            data: this.$http.adornData(id, false)
-          }).then(({data}) => {
-            if (data && data.code == 200) {
-              this.$message({
-                message: '操作成功',
-                type: 'success',
-                duration: 1500,
-                onClose: () => {
-                  this.getDataList()
-                }
-              })
-            } else {
-              if (data.message == undefined) {
-                this.$message.error(data.msg)
-              } else {
-                this.$message.error(data.message)
-              }
-            }
-          })
-        })
+        this.confirmFn('提示','您确定要删除该数据吗？','确定','/biz/trgoodclass/delete/',id)
       },
       // 隐藏按钮--》在线
       hideToShow (id) {
-        this.confirmFn('提示','您确定要在线吗？','确定','/biz/trtaxplan/toZai/',id)
+        this.confirmFn('提示','您确定要在线吗？','确定','/biz/trgoodclass/online/',id)
       },
       // 在线按钮--》隐藏
       showToHide (id) {
-        this.confirmFn('提示','您确定要隐藏吗？','确定','/biz/trtaxplan/toCang/',id)
+        this.confirmFn('提示','您确定要隐藏吗？','确定','/biz/trgoodclass/hide/',id)
       },
       // 获取数据列表
       getDataList () {
@@ -369,19 +340,19 @@
         }
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/biz/trtaxplan/list'),
+          url: this.$http.adornUrl('biz/trgoodclass/list'),
           method: 'get',
           params: this.$http.adornParams({
             'pageNum': String(this.pageIndex),
             'pageSize': String(this.pageSize),
             'id':this.dataForm.id|| undefined,
             'title':this.dataForm.title|| undefined,
-            'lecturer':this.dataForm.lecturer|| undefined,
             'tradeid':this.dataForm.tradeid|| undefined,
-            'attributeid':this.dataForm.attributeid|| undefined,
+            'ifFree':this.dataForm.ifFree|| undefined,
             'ifShow':this.dataForm.ifShow|| undefined,
-            'createTimeStart':creatTimeStart || undefined,
-            'createTimeEnd':creatTimeEnd || undefined
+            'creatTimeStart':creatTimeStart || undefined,
+            'creatTimeEnd':creatTimeEnd || undefined,
+            'lecturerName':this.dataForm.lecturerName|| undefined
           })
         }).then(({data}) => {
           if (data && data.code == 200) {

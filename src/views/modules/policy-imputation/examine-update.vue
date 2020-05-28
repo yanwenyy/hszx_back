@@ -356,7 +356,7 @@
           inputErrorMessage: '！保存失败，您未达到最少字数或超过最大字数'
         }).then(({ value }) => {
           this.$http({
-            url: this.$http.adornUrl('/biz/trpolicy/onlineAuditNoPass/{id}'),
+            url: this.$http.adornUrl('/biz/trpolicy/updateAuditNoPass'),
             method: 'GET',
             params: this.$http.adornParams({'id':this.dataForm.id,'auditFailReason':value})
           }).then(({data}) => {
