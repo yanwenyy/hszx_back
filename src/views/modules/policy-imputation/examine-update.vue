@@ -264,7 +264,7 @@
       //详情
       if( this.dataForm.id!=undefined) {
         this.$http({
-          url: this.$http.adornUrl(`/biz/trpolicy/info/${this.dataForm.id}`),
+          url: this.$http.adornUrl(`/biz/trpolicy/auditInfo/${this.dataForm.id}`),
           method: 'get',
           params: this.$http.adornParams()
         }).then(({data}) => {
@@ -295,7 +295,6 @@
             for(var i=0;i<data.data.policyRelativeFiles.length;i++){
               data.data.policyRelativeFiles[i].idShow=data.data.policyRelativeFiles[i].relativePolicyId
             }
-            console.log(data.data.policyRelativeFiles)
             this.dataForm.policyRelativeFiles=data.data.policyRelativeFiles
           }
 
@@ -391,80 +390,60 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.$http({
-            url: this.$http.adornUrl(''),
-            method: 'post',
-            data: this.$http.adornData('', false)
-          }).then(({data}) => {
-            if (data && data.code == 200) {
-              this.$message({
-                message: '操作成功',
-                type: 'success',
-                duration: 1500,
-                onClose: () => {
-                  this.getDataList()
+          this.$refs['dataForm'].validate((valid) => {
+            /*var taxS=this.dataForm.taxS
+            if(this.dataForm.taxS.length!=0){
+              if(taxS[0].taxId==undefined){
+                this.dataForm.taxS=[];
+                for(var i=0;i<taxS.length;i++){
+                  this.dataForm.taxS.push({taxId:taxS[i]})
+                }
+              }
+            }*/
+
+            var taxArr=this.dataForm.taxS.join(',')
+
+            if (valid) {
+              if(this.dataForm.region==""){
+                this.$message.error('政策地区不能为空')
+                return false
+              }
+              this.$http({
+                url: this.$http.adornUrl(`/biz/trpolicy/updateAuditPass`),
+                method: 'post',
+                data: this.$http.adornData({
+                  'id': this.dataForm.id || undefined,
+                  'title': this.dataForm.title,
+                  'content':this.dataForm.content,
+                  'tradeid':this.dataForm.tradeid,
+                  'office':this.dataForm.office,
+                  'officialReleaseDate':this.dataForm.officialReleaseDate,
+                  'timelinessid':this.dataForm.timelinessid,
+                  'style':this.dataForm.style,
+                  'fileNum':this.dataForm.fileNum,
+                  'userid':this.dataForm.userid,
+                  'tax':taxArr,
+                  'region':this.dataForm.region,
+                  'province':this.dataForm.province,
+                  'policyRelativeFiles':this.dataForm.policyRelativeFiles || undefined
+                })
+              }).then(({data}) => {
+                if (data && data.code == 200) {
+                  this.$message({
+                    message: '操作成功',
+                    type: 'success',
+                    duration: 1500,
+                    onClose: () => {
+                      this.closePage()
+                    }
+                  })
+
+                } else {
+                  this.$message.error(data.msg)
                 }
               })
-            } else {
-              if(data.message==undefined){
-                this.$message.error(data.msg)
-              }else{
-                this.$message.error(data.message)
-              }
             }
           })
-        })
-        this.$refs['dataForm'].validate((valid) => {
-          var taxS=this.dataForm.taxS
-          if(this.dataForm.taxS.length!=0){
-            if(taxS[0].taxId==undefined){
-              this.dataForm.taxS=[];
-              for(var i=0;i<taxS.length;i++){
-                this.dataForm.taxS.push({taxId:taxS[i]})
-              }
-            }
-          }
-          var taxArr=this.dataForm.taxS
-
-          if (valid) {
-            if(this.dataForm.region==""){
-              this.$message.error('政策地区不能为空')
-              return false
-            }
-            this.$http({
-              url: this.$http.adornUrl(`/biz/policy/${!this.dataForm.id ? 'save' : 'update'}`),
-              method: 'post',
-              data: this.$http.adornData({
-                'id': this.dataForm.id || undefined,
-                'title': this.dataForm.title,
-                'content':this.dataForm.content,
-                'tradeid':this.dataForm.tradeid,
-                'office':this.dataForm.office,
-                'officialReleaseDate':this.dataForm.officialReleaseDate,
-                'timelinessid':this.dataForm.timelinessid,
-                'style':this.dataForm.style,
-                'fileNum':this.dataForm.fileNum,
-                'userid':this.dataForm.userid,
-                'tax':taxArr,
-                'region':this.dataForm.region,
-                'province':this.dataForm.province
-              })
-            }).then(({data}) => {
-              if (data && data.code == 200) {
-                this.$message({
-                  message: '操作成功',
-                  type: 'success',
-                  duration: 1500,
-                  onClose: () => {
-                    this.closePage()
-                  }
-                })
-
-              } else {
-                this.$message.error(data.msg)
-              }
-            })
-          }
         })
       }
     }

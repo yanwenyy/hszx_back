@@ -274,7 +274,6 @@ export default {
           for(var i=0;i<data.data.policyRelativeFiles.length;i++){
             data.data.policyRelativeFiles[i].idShow=data.data.policyRelativeFiles[i].relativePolicyId
           }
-          console.log(data.data.policyRelativeFiles)
           this.dataForm.policyRelativeFiles=data.data.policyRelativeFiles
         }
 

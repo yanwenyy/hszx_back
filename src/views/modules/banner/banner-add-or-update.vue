@@ -160,6 +160,9 @@
             this.showPos=[{value:1, label:'首页'}]
             this.dataForm.showPlace=1
           }
+          if(this.dataForm.jumpType==2){
+            this.disabledStatus=false
+          }
         })
       }
 

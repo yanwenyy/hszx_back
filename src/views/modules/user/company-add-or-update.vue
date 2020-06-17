@@ -117,7 +117,7 @@
                 if(datas.province=="北京"||datas.province=="上海"||datas.province=="天津"||datas.province=="重庆"){
                   this.dataForm.province = datas.province+"市";
                   this.dataForm.city = datas.city+"城区";
-                }else{
+                }else if(datas.province!=null){
                   this.dataForm.province = datas.province+"省";
                   this.dataForm.city = datas.city+"市";
                 }
@@ -131,8 +131,10 @@
       dataFormSubmit () {
         if(this.dataForm.province=="北京市"||this.dataForm.province=="上海市"||this.dataForm.province=="天津市"||this.dataForm.province=="重庆市"){
           this.dataForm.province = this.dataForm.province.split("市")[0];
-          this.dataForm.city = this.dataForm.city.split("城区")[0];
-        }else{
+          if(this.dataForm.city!=""&&this.dataForm.city!=undefined){
+            this.dataForm.city = this.dataForm.city.split("城区")[0];
+          }
+        }else if(this.dataForm.province!=""&&this.dataForm.city!=""){
           this.dataForm.province = this.dataForm.province.split("省")[0];
           this.dataForm.city = this.dataForm.city.split("市")[0];
         }

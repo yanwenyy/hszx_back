@@ -197,8 +197,8 @@
         label="审核操作">
         <template slot-scope="scope">
           <div>
-            <el-button style="color:#1e88e5" type="text" size="mini" v-if="isAuth('biz:trpolicy:onlineApply')" @click="online(scope.row.id)" v-show="scope.row.policyStatus==0&&scope.row.passAndE!=1">申请上线</el-button>
-            <el-button style="color:orange" type="text" size="mini" v-if="isAuth('biz:trpolicy:updateApply')" v-show="scope.row.passAndE==1" @click="update(scope.row.id)">申请更新</el-button>
+            <el-button style="color:#1e88e5" type="text" size="mini" v-if="isAuth('biz:trpolicy:onlineApply')" @click="online(scope.row.id)" v-show="scope.row.policyStatus==0&&scope.row.passAndE!=1&&scope.row.auditStatus!=2">申请上线</el-button>
+            <el-button style="color:orange" type="text" size="mini" v-if="isAuth('biz:trpolicy:updateApply')" v-show="scope.row.passAndE==1&&scope.row.auditStatus!=2" @click="update(scope.row.id)">申请更新</el-button>
             <el-button type="text" style="color:#000" size="mini" v-show="scope.row.policyStatus==1&&scope.row.auditStatus!=2" v-if="isAuth('biz:trpolicy:offlineApply')" @click="offline(scope.row.id)">申请下线</el-button>
           </div>
           <div>

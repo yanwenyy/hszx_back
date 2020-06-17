@@ -150,7 +150,7 @@ export default {
       tradeShow:false,
       tradeList:[],
       timelinessList:[],
-      userList:[{uuid:'0e076cba7c5944e7b535b72700109694',realname:'李贺'}],
+      userList:[],
       taxList:[],
       fileList:[],
 

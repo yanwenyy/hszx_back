@@ -62,9 +62,11 @@
         <el-input :value="dataForm.ifShow==0?'隐藏':'在线'" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
       <el-form-item label="引言" prop="summary">
+        <p style="color:#999;margin: 0;">注释：100字以内；可复制内容栏文字</p>
         <el-input
           type="textarea"
           v-model="dataForm.summary"
+          style="width:500px"
           maxlength="100"
           show-word-limit
         ></el-input>
@@ -219,7 +221,7 @@ export default {
               'attributeid': this.dataForm.attributeid,
               'content':this.dataForm.content,
               'sort':this.dataForm.sort || undefined,
-              'summary':this.dataForm.summary || undefined
+              'summary':this.dataForm.summary
             })
           }).then(({data}) => {
             if (data && data.code == 200) {

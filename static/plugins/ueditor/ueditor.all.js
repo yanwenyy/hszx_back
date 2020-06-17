@@ -24513,7 +24513,6 @@
           var allowFiles = me.getOpt('imageAllowFiles');
 
           me.focus();
-          me.execCommand('inserthtml', '<img class="loadingclass" id="' + loadingId + '" src="' + me.options.themePath + me.options.theme +'/images/spacer.gif" title="' + (me.getLang('simpleupload.loading') || '') + '" >');
 
           /!* 判断后端配置是否没有加载成功 *!/
           if (!me.getOpt('imageActionName')) {
@@ -24552,20 +24551,23 @@
             processData: false,
             contentType: false,
             success: function (data) {
+
               var link, loader,
                 body = (iframe.contentDocument || iframe.contentWindow.document).body,
                 result = body.innerText || body.textContent || '';
              link = 'http://'+me.options.imageUrlPrefix + data.url; //修改图片上传回显路径 此处为源码 修改人lhf
              /* link = 'http://'+ data.url;*/
+
               if(data.state == 'SUCCESS' && data.url) {
-                loader = me.document.getElementById(loadingId);
+                me.execCommand('inserthtml', '<img src="http://'+me.options.imageUrlPrefix + data.url+'" title="'+data.title+'" alt="'+data.original+'" width="100%">');
+               /* loader = me.document.getElementById(loadingId);
                 loader.setAttribute('src', link);
                 loader.setAttribute('_src', link);
                 loader.setAttribute('title', data.title || '');
                 loader.setAttribute('alt', data.original || '');
                 loader.setAttribute('width', '100%');
                 loader.removeAttribute('id');//图片设置宽度100%，新增代码 修改人lhf
-                domUtils.removeClasses(loader, 'loadingclass');
+                domUtils.removeClasses(loader, 'loadingclass');*/
               } else {
                 showErrorLoader && showErrorLoader(data.state);
               }

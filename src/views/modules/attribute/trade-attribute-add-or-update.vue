@@ -76,6 +76,9 @@
       // 表单提交
       dataFormSubmit () {
         this.$refs['dataForm'].validate((valid) => {
+          if(this.dataForm.name=='行业新闻'){
+            this.$message.error('不能新增属性名字为 行业新闻 的属性')
+          }
           if (valid) {
             this.$http({
               url: this.$http.adornUrl(`/biz/attribute/${!this.dataForm.id ? 'save' : 'update'}`),

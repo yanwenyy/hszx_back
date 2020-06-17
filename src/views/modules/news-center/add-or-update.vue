@@ -24,6 +24,7 @@
           width="630"
           height="500"
           style=""
+          v-model="visible"
           trigger="click">
           <h3 style="text-align: center">请选择新闻封面样式</h3>
           <div style="display: inline-block;width: 300px;text-align: center;">
@@ -31,13 +32,14 @@
             <el-radio v-model="dataForm.coverType" label="1" style="margin: 15px 0">样式1</el-radio>
           </div>
           <div style="display: inline-block;width: 300px;text-align: center">
-            <img src="~@/assets/img/style1.png" width="290"></img>
+            <img src="~@/assets/img/style2.png" width="290"></img>
             <el-radio v-model="dataForm.coverType" label="2" style="margin: 15px 0">样式2</el-radio>
           </div>
           <div style="display: inline-block;width: 300px;text-align: center">
             <img src="~@/assets/img/style3.png" width="290"></img>
             <el-radio v-model="dataForm.coverType" label="3" style="margin: 15px 0">样式3</el-radio>
           </div>
+          <div style="margin: 20px auto;text-align: center"><el-button type="info" @click="visible = !visible">关闭</el-button></div>
           <el-button slot="reference">选择样式</el-button>
         </el-popover>
         </div>
@@ -178,6 +180,7 @@ export default {
       headers: {
         token: this.$cookie.get('token')
       },
+      visible:false,
       titleTxt:"新增",
       addHide:false,
       attributeShow:false,
