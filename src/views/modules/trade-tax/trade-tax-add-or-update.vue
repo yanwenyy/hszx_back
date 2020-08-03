@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    :title="!dataForm.id ? '新增' : '修改'"
+    :title="!dataForm.taxId ? '新增' : '修改'"
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" label-position="right" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="110px">
@@ -10,8 +10,8 @@
           <el-checkbox label="2" name="typeList" :disabled="eit">政策条文</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
-      <el-form-item label="时效性名称" prop="name">
-        <el-input v-model="dataForm.name" placeholder=""></el-input>
+      <el-form-item label="税种名称" prop="taxName">
+        <el-input v-model="dataForm.taxName" placeholder=""></el-input>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -28,37 +28,37 @@
         visible: false,
         eit:false,
         dataForm: {
-          id: 0,
-          name: '',
+          taxId: 0,
+          taxName: '',
           typeList:[]
         },
         dataRule: {
-          name: [
-            { required: true, message: '时效性名称不能为空', trigger: 'blur' }
+          taxName: [
+            { required: true, message: '税种名称不能为空', trigger: 'blur' }
           ],
           typeList: [
             { required: true, message: '模块不能为空', trigger: 'blur' }
-          ],
+          ]
         }
       }
     },
     methods: {
       init (id) {
-        this.dataForm.id = id || 0
+        this.dataForm.taxId = id || 0
         this.visible = true
-        if(this.dataForm.id==0){
+        if(this.dataForm.taxId==0){
           this.eit=false
         }
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
-          if (this.dataForm.id) {
+          if (this.dataForm.taxId) {
             this.$http({
-              url: this.$http.adornUrl(`/biz/timeliness/info/${this.dataForm.id}`),
+              url: this.$http.adornUrl(`/biz/trtax/info/${this.dataForm.taxId}`),
               method: 'get',
               params: this.$http.adornParams()
             }).then(({data}) => {
               if (data && data.code == 200) {
-                this.dataForm.name = data.data.name
+                this.dataForm.taxName = data.data.taxName
                 this.eit=true
                 this.dataForm.typeList = new Array(data.data.type)
               }
@@ -72,11 +72,11 @@
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({
-              url: this.$http.adornUrl(`/biz/timeliness/${!this.dataForm.id ? 'save' : 'update'}`),
+              url: this.$http.adornUrl(`/biz/trtax/${!this.dataForm.taxId ? 'save' : 'update'}`),
               method: 'post',
               data: this.$http.adornData({
-                'id': this.dataForm.id || undefined,
-                'name': this.dataForm.name,
+                'taxId': this.dataForm.taxId || undefined,
+                'taxName': this.dataForm.taxName,
                 'typeList': this.dataForm.typeList,
               })
             }).then(({data}) => {

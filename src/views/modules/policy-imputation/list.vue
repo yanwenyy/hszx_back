@@ -9,6 +9,18 @@
       </el-form-item>
       <el-form-item>
         <el-select
+          v-model="dataForm.property"
+          clearable
+          placeholder="属性" style="width: 150px">
+          <el-option v-for="item in propertyList"
+                     :label="item.label"
+                     :value="item.value"
+                     :key="item.value" >
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-select
           v-model="dataForm.tradeid"
           clearable
           placeholder="全部行业" style="width: 150px">
@@ -18,6 +30,9 @@
                      :key="item.tradeId" >
           </el-option>
         </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-input v-model="dataForm.policyOriginalId" placeholder="原文ID" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-input v-model="dataForm.title" placeholder="标题" clearable></el-input>
@@ -70,10 +85,25 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-input placeholder="政策地区（省级）" v-model="dataForm.province" clearable></el-input>
+        <el-select
+          v-model="dataForm.tag"
+          clearable
+          placeholder="标签" style="width: 150px">
+          <el-option v-for="item in tagList"
+                     :label="item.tagName"
+                     :value="item.tagId"
+                     :key="item.tagId">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <!--<el-form-item>
+        <el-input placeholder="政策省" v-model="dataForm.province" clearable></el-input>
       </el-form-item>
       <el-form-item>
-        <el-input placeholder="政策地区（市级）" v-model="dataForm.region" clearable></el-input>
+        <el-input placeholder="政策市级" v-model="dataForm.region" clearable></el-input>
+      </el-form-item>-->
+      <el-form-item>
+        <distpicker hide-area @province="onChangeProvince" ref="child" @city="onChangeCity" :province="dataForm.province" :placeholders="{ province: '全国', city: '市', area: '区' }" :city="dataForm.region" ></distpicker>
       </el-form-item>
       <el-form-item>
         <el-select
@@ -100,6 +130,17 @@
         </el-select>
       </el-form-item>
       <el-form-item>
+          <el-upload
+            accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+            :action="url"
+            :on-success="successHandle"
+            :headers="myHeaders"
+            :show-file-list="false"
+            :on-progress="openFullScreen"
+            :file-list="fileListUpload"
+            style="display:inline-block;text-align: center;">
+            <el-button type="primary">导入</el-button>
+          </el-upload>
         <el-button type="primary" @click="getDataList()">搜索</el-button>
         <el-button type="info" @click="resetForm()" >重置</el-button>
       </el-form-item>
@@ -119,10 +160,25 @@
         label="ID">
       </el-table-column>
       <el-table-column
+        prop="property"
+        header-align="center"
+        align="center"
+        label="属性">
+        <template slot-scope="scope">
+          <span>{{scope.row.property==1?'行业政策':'普适政策'}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="tradeidName"
         header-align="center"
         align="center"
         label="行业">
+      </el-table-column>
+      <el-table-column
+        prop="policyOriginalId"
+        header-align="center"
+        align="center"
+        label="原文ID">
       </el-table-column>
       <el-table-column
         prop="title"
@@ -151,20 +207,28 @@
         label="税种">
       </el-table-column>
       <el-table-column
-        prop="province region"
+        prop="province"
         header-align="center"
         align="center"
-        label="政策地区">
-        <template slot-scope="scope">
-          <span v-if='scope.row.region==scope.row.province'>{{scope.row.region}}</span>
-          <span v-else>{{scope.row.province}} {{scope.row.region}}</span>
-        </template>
+        label="政策省">
+      </el-table-column>
+      <el-table-column
+        prop="region"
+        header-align="center"
+        align="center"
+        label="政策市">
       </el-table-column>
       <el-table-column
         prop="timelinessidName"
         header-align="center"
         align="center"
         label="时效性">
+      </el-table-column>
+      <el-table-column
+        prop="tagName"
+        header-align="center"
+        align="center"
+        label="标签">
       </el-table-column>
       <el-table-column
         prop="createTime"
@@ -237,16 +301,21 @@
 </template>
 
 <script>
+  import distpicker from '@/components/distpicker/Distpicker.vue'
   export default {
+    components: {distpicker},
     data () {
       return {
         dataForm: {
           id:'',
           title:'',
           fileNum:'',
+          policyOriginalId:'',
           tradeid:'',
           timelinessid:'',
-          tsx:'',
+          tax:'',
+          tag:'',
+          property:'',
           province:'',
           region:'',
           auditStatus:'',
@@ -254,6 +323,12 @@
           releaseTime:'',
           createTime:''
         },
+        myHeaders: {
+          token: this.$cookie.get('token')
+        },
+        url:this.$http.adornUrl(`/biz/trpolicy/importExcel`),
+        propertyList:[{label:'行业政策',value:1},{label:'普适政策',value:2}],
+        tagList:[],
         tradeList:[],
         taxList:[],
         timelinessList:[],
@@ -264,7 +339,8 @@
         pageSize: 10,
         totalPage: 0,
         dataListLoading: false,
-        dataListSelections: []
+        dataListSelections: [],
+        fileListUpload:[],
       }
     },
     activated () {
@@ -285,9 +361,9 @@
       })
       //税种
       this.$http({
-        url: this.$http.adornUrl('/biz/tax/taxList'),
+        url: this.$http.adornUrl('/biz/trtax/trTaxList'),
         method: 'GET',
-        params: this.$http.adornParams()
+        params: this.$http.adornParams({'type':2})
       }).then(({data}) => {
         var dataList=[]
         for( var i=0;i<data.data.length;i++){
@@ -299,7 +375,7 @@
       this.$http({
         url: this.$http.adornUrl('/biz/timeliness/timelinessList'),
         method: 'GET',
-        params: this.$http.adornParams()
+        params: this.$http.adornParams({'type':2})
       }).then(({data}) => {
         var dataList=[]
         for( var i=0;i<data.data.length;i++){
@@ -307,16 +383,32 @@
         }
         this.timelinessList = dataList
       })
+      //标签
+      this.$http({
+        url: this.$http.adornUrl('/biz/trtag/trTagList'),
+        method: 'GET',
+        params: this.$http.adornParams({'type':2})
+      }).then(({data}) => {
+        var dataList=[]
+        for( var i=0;i<data.data.length;i++){
+          dataList.push(data.data[i]);
+        }
+        this.tagList = dataList
+      })
     },
     methods: {
       //重置搜索条件
       resetForm(){
+
         this.dataForm={
           id:'',
           title:'',
           fileNum:'',
           tradeid:'',
           timelinessid:'',
+          policyOriginalId:'',
+          tag:'',
+          property:'',
           tsx:'',
           province:'',
           region:'',
@@ -325,6 +417,14 @@
           releaseTime:'',
           createTime:''
         }
+        this.$refs.child.reset()
+      },
+      //政策地区
+      onChangeProvince(e) {
+        this.dataForm.province=e.province.value
+      },
+      onChangeCity (e) {
+        this.dataForm.region=e.city.value
       },
       confirmFn(title,content,confirmButtonText,ajaxUrl,ids){
         if(confirmButtonText==""){
@@ -454,6 +554,37 @@
           });
         });
       },
+      openFullScreen(event, file, fileList) {
+        const loading = this.$loading({
+          lock: true,
+          text: '正在导入...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+      },
+      successHandle (response, file, fileList) {
+        this.fileList = []
+        const loading = this.$loading({
+          lock: true,
+          text: '正在导入...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+        if (response && response.code == 200) {
+          this.$message.success('导入成功')
+          loading.close();
+          this.getDataList ()
+        } else {
+          loading.close();
+          this.$message({
+            dangerouslyUseHTMLString: true,
+            type:'error',
+            showClose: true,
+            duration:0,
+            message:'<div style="max-height: 320px;overflow-y: auto;">'+response.msg+'</div>'
+          });
+        }
+      },
       // 获取数据列表
       getDataList () {
         var releaseStartTime='',releaseLastTime='',createTimeStart='',createTimeEnd=''
@@ -473,11 +604,14 @@
             'pageNum': String(this.pageIndex),
             'pageSize': String(this.pageSize),
             'id':this.dataForm.id|| undefined,
+            'policyOriginalId':this.dataForm.policyOriginalId|| undefined,
+            'tag':this.dataForm.tag|| undefined,
+            'property':this.dataForm.property|| undefined,
             'title':this.dataForm.title|| undefined,
             'fileNum':this.dataForm.fileNum|| undefined,
             'tradeid':this.dataForm.tradeid|| undefined,
             'timelinessid':this.dataForm.timelinessid|| undefined,
-            'tsx':this.dataForm.tsx|| undefined,
+            'tax':this.dataForm.tax|| undefined,
             'province':this.dataForm.province|| undefined,
             'region':this.dataForm.region|| undefined,
             'auditStatus':this.dataForm.auditStatus|| undefined,
@@ -513,3 +647,6 @@
     }
   }
 </script>
+<style>
+  .distpicker-address-wrapper select{height: 36px;line-height: 40px;padding:0.15rem 0.75rem}
+</style>

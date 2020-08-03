@@ -2,7 +2,37 @@
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
-        <el-button type="warning" v-if="isAuth('biz:timeliness:save')" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button type="warning" v-if="isAuth('biz:trtag:save')" @click="addOrUpdateHandle()">新增</el-button>
+      </el-form-item>
+      <el-form-item>
+        <el-select
+          v-model="dataForm.type"
+          clearable
+          placeholder="模块">
+          <el-option
+            v-for="item in typeList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-input v-model="dataForm.tagName" placeholder="标签" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-select
+          v-model="dataForm.status"
+          clearable
+          placeholder="状态">
+          <el-option
+            v-for="item in statusList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="getDataList()">搜索</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -12,7 +42,7 @@
       @selection-change="selectionChangeHandle"
       style="width: 100%;">
       <el-table-column
-        prop="id"
+        prop="tagId"
         header-align="center"
         align="center"
         label="ID">
@@ -27,10 +57,10 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="name"
+        prop="tagName"
         header-align="center"
         align="center"
-        label="时效性">
+        label="标签">
       </el-table-column>
       <el-table-column
         prop="insertTime"
@@ -40,14 +70,24 @@
         label="创建时间">
       </el-table-column>
       <el-table-column
+        prop="status"
+        header-align="center"
+        align="center"
+        label="状态">
+        <template slot-scope="scope">
+          <el-button type="text" v-if="scope.row.status==0" @click="updateShowFlag(scope.row.tagId,0)">隐藏</el-button>
+          <el-button type="text" v-if="scope.row.status==1" @click="updateShowFlag(scope.row.tagId,1)">在线</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column
         fixed="right"
         header-align="center"
         align="center"
         width="150"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">编辑</el-button>
-          <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
+          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.tagId)">编辑</el-button>
+          <el-button type="text" size="small" @click="deleteHandle(scope.row.tagId)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -66,14 +106,18 @@
 </template>
 
 <script>
-  import AddOrUpdate from './timeliness-add-or-update'
+  import AddOrUpdate from './tag-add-or-update'
   export default {
     data () {
       return {
         dataForm: {
-          taxName: ''
+          tagName: '',
+          type:'',
+          status:''
         },
         dataList: [],
+        typeList:[{'label':'政策原文','value':1},{'label':'政策条文','value':2}],
+        statusList:[{'label':'在线','value':'1'},{'label':'隐藏','value':'0'}],
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
@@ -89,15 +133,63 @@
       this.getDataList()
     },
     methods: {
+      updateShowFlag (id,txt) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        var ajaxUrl=''
+        var ajaxtxt=''
+        if(txt==1){
+          //在线--》隐藏
+          ajaxUrl='/biz/trtag/toCang';
+          ajaxtxt='您确定进行隐藏操作吗？'
+        }else{
+          ajaxUrl='/biz/trtag/toZai';
+          ajaxtxt='您确定进行在线操作吗？'
+        }
+        this.$confirm(`${ajaxtxt}`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+
+          this.$http({
+            url: this.$http.adornUrl(`${ajaxUrl}`),
+            method: 'post',
+            params:this.$http.adornParams({'tagId':id})
+          }).then(({data}) => {
+            if (data && data.code == 200) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              if(data.message==undefined){
+                this.$message.error(data.msg)
+              }else{
+                this.$message.error(data.message)
+              }
+            }
+          })
+        }).catch(() => {})
+
+      },
       // 获取数据列表
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/biz/timeliness/list'),
+          url: this.$http.adornUrl('/biz/trtag/list'),
           method: 'get',
           params: this.$http.adornParams({
             'pageNum': this.pageIndex,
-            'pageSize': this.pageSize
+            'pageSize': this.pageSize,
+            'tagName': this.dataForm.tagName || undefined,
+            'status':this.dataForm.status || undefined,
+            'type':this.dataForm.type || undefined
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
@@ -143,7 +235,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/biz/timeliness/delete'),
+            url: this.$http.adornUrl('/biz/trtag/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {

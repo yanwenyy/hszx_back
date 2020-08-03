@@ -2,10 +2,13 @@
   <div class="mod-policy">
     <h2 style="border-bottom: 1px solid #ccc;padding-bottom: 20px;margin-bottom: 50px">查看</h2>
     <el-form label-position="left" label-width="120px" :model="dataForm" ref="dataForm">
-      <el-form-item label="ID" prop="id">
-        <el-input v-model="dataForm.id" :disabled="true" style="width:220px"></el-input>
+      <el-form-item label="属性" prop="property">
+        <el-input :value="dataForm.property==1?'行业政策':'普适政策'" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
-      <el-form-item label="行业" prop="tradeidName">
+      <el-form-item label="原文ID" prop="policyOriginalId">
+        <el-input v-model="dataForm.policyOriginalId" :disabled="true" style="width:220px"></el-input>
+      </el-form-item>
+      <el-form-item label="行业" prop="tradeidName" v-if="dataForm.property==1">
         <el-input v-model="dataForm.tradeidName" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
       <el-form-item label="标题" prop="title">
@@ -30,8 +33,8 @@
       <el-form-item label="税种" prop="taxName">
         <el-input v-model="dataForm.taxName" disabled clearable style="width:500px"></el-input>
       </el-form-item>
-      <el-form-item prop="useridName" label="指导专家">
-        <el-input v-model="dataForm.useridName" disabled clearable style="width:500px"></el-input>
+      <el-form-item label="标签" prop="tagName">
+        <el-input v-model="dataForm.tagName" disabled clearable style="width:500px"></el-input>
       </el-form-item>
       <el-form-item label="创建时间" prop="createTime" >
         <el-input v-model="dataForm.createTime" :disabled="true" style="width:220px"></el-input>
@@ -42,7 +45,7 @@
       <el-form-item label="内容" prop="content">
         <div v-html="dataForm.content" style="border: 1px solid #ccc;padding:0 10px"></div>
       </el-form-item>
-      <el-form-item label="相关文件">
+      <el-form-item label="相关条文">
         <el-table
           :data="dataList"
           border
@@ -63,7 +66,50 @@
             prop="relativePolicyId"
             header-align="center"
             align="center"
-            label="ID">
+            label="条文ID">
+          </el-table-column>
+          <el-table-column
+            prop="title"
+            header-align="center"
+            align="center"
+            label="政策标题">
+          </el-table-column>
+          <el-table-column
+            prop="fileNum"
+            header-align="center"
+            align="center"
+            label="文件号">
+          </el-table-column>
+          <el-table-column
+            prop="sort"
+            header-align="center"
+            align="center"
+            label="排序">
+          </el-table-column>
+        </el-table>
+      </el-form-item>
+      <el-form-item label="相关原文">
+        <el-table
+          :data="dataListOriginal"
+          border
+          v-loading="dataListLoadingOriginal"
+          :header-cell-style="{background: 'rgb(21, 161, 147)',color:'#fff'}"
+          style="width: 100%;">
+          <el-table-column
+            prop="index"
+            header-align="center"
+            align="center"
+            width="80"
+            label="序号">
+            <template  slot-scope="scope">
+              <span>{{totalPageOriginal-scope.$index}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="relativePolicyId"
+            header-align="center"
+            align="center"
+            label="原文ID">
           </el-table-column>
           <el-table-column
             prop="title"
@@ -145,7 +191,10 @@ export default {
   data(){
     return {
       dataForm:{
+        property:'',
+        typeName:'',
         id:parseInt(this.$route.query.id) || undefined,
+        policyOriginalId:'',
         tradeidName:'',
         title:'',
         officialReleaseDate:'',
@@ -153,6 +202,7 @@ export default {
         office:'',
         timelinessidName:'',
         taxName:'',
+        tagName:'',
         content:'',
         useridName:'',
         province:'',
@@ -165,6 +215,9 @@ export default {
       totalPage1:0,
       dataList:[],
       dataListLoading:false,
+      totalPageOriginal:0,
+      dataListOriginal:[],
+      dataListLoadingOriginal:false,
       dataList1:[],
       dataList1Loading:false
     }
@@ -176,6 +229,9 @@ export default {
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
+        this.dataForm.property=data.data.property
+        this.dataForm.typeName=data.data.typeName
+        this.dataForm.policyOriginalId=data.data.policyOriginalId
         this.dataForm.tradeidName=data.data.tradeidName
         this.dataForm.title = data.data.title
         this.dataForm.officialReleaseDate = data.data.officialReleaseDate
@@ -192,12 +248,19 @@ export default {
         }
         this.dataForm.timelinessidName = data.data.timelinessidName,
         this.dataForm.taxName =data.data.taxName
-        this.dataForm.useridName=data.data.useridName
+        /*this.dataForm.useridName=data.data.useridName*/
+        this.dataForm.tagName=data.data.tagName
         this.dataForm.createTime = this.commonDate.formatTime('', '', data.data.createTime)
         this.dataForm.policyStatusName=data.data.policyStatusName
         this.dataForm.content=data.data.content
-        this.dataList=data.data.policyRelativeFiles
-        this.totalPage=data.data.policyRelativeFiles.length
+        if(data.data.policyRelativeFiles!=''&&data.data.policyRelativeFiles!=undefined&&data.data.policyRelativeFiles!=null){
+          this.dataList=data.data.policyRelativeFiles
+          this.totalPage=data.data.policyRelativeFiles.length
+        }
+        if(data.data.policyOriginalRelativeFiles!=''&&data.data.policyOriginalRelativeFiles!=undefined&&data.data.policyOriginalRelativeFiles!=null){
+          this.dataListOriginal=data.data.policyOriginalRelativeFiles
+          this.totalPageOriginal=data.data.policyOriginalRelativeFiles.length
+        }
         this.dataList1=data.data.policyRelativeExperts
         this.totalPage1=data.data.policyRelativeExperts.length
       })

@@ -96,6 +96,7 @@
           :action="UploadUrl()"
           :on-remove="handleRemove"
           :before-remove="beforeRemove"
+          accept="application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/x-png,image/png,application/x-jpg,image/jpeg,image/jpeg,image/gif"
           multiple
           :file-list="fileList">
           <el-button size="small" type="primary">上传附件</el-button>

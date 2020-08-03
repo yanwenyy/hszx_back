@@ -466,7 +466,6 @@
       // 获取数据列表
       getDataList () {
         var createTimeStart='',createTimeEnd=''
-        console.log(this.dataForm.createTime)
         if(this.dataForm.createTime!=undefined&&this.dataForm.createTime!=""&&this.dataForm.createTime.length!=0&&this.dataForm.createTime!=null){
           createTimeStart=this.dataForm.createTime[0]
           createTimeEnd=this.dataForm.createTime[1]

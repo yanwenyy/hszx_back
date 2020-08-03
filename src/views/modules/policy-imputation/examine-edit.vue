@@ -1,7 +1,21 @@
 <template>
   <div class="mod-policy">
-    <h2 style="border-bottom: 1px solid #ccc;padding-bottom: 20px;margin-bottom: 50px">{{titleTxt}}</h2>
+    <h2 style="border-bottom: 1px solid #ccc;padding-bottom: 20px;margin-bottom: 50px">审核</h2>
     <el-form label-position="left" label-width="120px" :model="dataForm" :rules="dataRule" ref="dataForm">
+      <div style="border:1px solid #ccc;padding-left:50px;padding-top:25px;margin-bottom:30px">
+          <el-form-item label="ID" prop="id" style="display:inline-block">
+            <el-input v-model="dataForm.id" :disabled="true" style="width:250px"></el-input>
+          </el-form-item>
+          <el-form-item label="申请人" prop="applyIdName" style="display:inline-block;margin-left:50px">
+            <el-input v-model="dataForm.applyIdName" :disabled="true" style="width:250px"></el-input>
+          </el-form-item>
+          <el-form-item label="审核类型" style="display:inline-block">
+            <el-input :value="'申请'+eType"  :disabled="true" style="width:250px"></el-input>
+          </el-form-item>
+          <el-form-item label="申请时间" prop="applyTime" style="display:inline-block;margin-left:50px">
+            <el-input v-model="dataForm.applyTime" :disabled="true" style="width:250px"></el-input>
+          </el-form-item>
+      </div>
       <el-form-item label="ID" prop="id" v-if="addHide==true">
         <el-input v-model="dataForm.id" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
@@ -83,18 +97,18 @@
                        name="tagList" >{{item.tagName}}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
-<!--      <el-form-item prop="userid" label="指导专家">
-        <el-select
-          v-model="dataForm.userid"
-          clearable
-          style="width: 220px">
-          <el-option v-for="item in userList"
-                     :label="item.realname"
-                     :value="item.uuid"
-                     :key="item.uuid">
-          </el-option>
-        </el-select>
-      </el-form-item>-->
+      <!--      <el-form-item prop="userid" label="指导专家">
+              <el-select
+                v-model="dataForm.userid"
+                clearable
+                style="width: 220px">
+                <el-option v-for="item in userList"
+                           :label="item.realname"
+                           :value="item.uuid"
+                           :key="item.uuid">
+                </el-option>
+              </el-select>
+            </el-form-item>-->
       <el-form-item label="创建时间" prop="createTime" v-if="addHide==true">
         <el-input v-model="dataForm.createTime" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
@@ -103,7 +117,7 @@
       </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
-          <UEditor v-if="dataForm.id==undefined||dataForm.content!=''" :key="'editor_imputation'"  :id='"editor_imputation"':index="0" :econtent="dataForm.content" :modelname="'imputation'" @func="editorContent" ></UEditor>
+          <UEditor v-if="dataForm.id==undefined||dataForm.content!=''" :key="'editor_imputation_edit'" :id='"editor_imputation_edit"' :index="0" :econtent="dataForm.content"  @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item label="相关文件">
@@ -129,11 +143,9 @@
         </div>
         <div><el-button @click="addFile_original()" type="warning">关联相关原文</el-button></div>
       </el-form-item>
-      <el-form-item label="相关解读">
-        <span style="color: #999">请于“相关解读管理”模块进行添加</span>
-      </el-form-item>
       <el-form-item style="text-align: center;">
-        <el-button type="primary" @click="dataFormSubmit()">保存</el-button>
+        <el-button type="primary" @click="dataFormSubmit()">保存并审核通过</el-button>
+        <el-button type="primary" @click="fail()">审核未通过</el-button>
         <el-button type="info" @click="closePage()">关闭</el-button>
       </el-form-item>
     </el-form>
@@ -148,26 +160,10 @@ export default {
     ElButton,
     UEditor},
   data(){
-    /*let validateTax = (rule, value, callback) => {
-      if (this.dataForm.taxS.length==0) {
-        callback(new Error("税种不能为空"));
-      } else {
-        callback();
-      }
-    };
-    let validateTag = (rule, value, callback) => {
-      if (this.dataForm.taxS.length==0) {
-        callback(new Error("标签不能为空"));
-      } else {
-        callback();
-      }
-    };*/
+
     return {
-      delFlagShow:false,
-      headers: {
-        token: this.$cookie.get('token')
-      },
-      titleTxt:"新增",
+      eType:'上线',
+      editType:this.$route.query.editType,
       addHide:false,
       disabledStatus:false,
       tradeShow:false,
@@ -192,7 +188,6 @@ export default {
         tag:'',
         tagS:[],
         content:'',
-       /* userid:'',*/
         province:'',
         region:'',
         policyRelativeFiles: [],
@@ -213,15 +208,6 @@ export default {
         timelinessid:[
           { required: true, message: '时效性不能为空', trigger: 'blur' }
         ],
-        /*taxS:[
-          { validator: validateTax,trigger: 'blur', required: true}
-        ],
-        tagS:[
-          { validator: validateTag,trigger: 'blur', required: true}
-        ],*/
-        /*userid:[
-          { required: true, message: '指导专家不能为空', trigger: 'blur' }
-        ],*/
         content:[
           {required: true, message: '内容不能为空', trigger: 'blur'}
         ]
@@ -229,6 +215,11 @@ export default {
     }
   },
   mounted(){
+    if(this.editType=='online'){
+      this.eType='上线'
+    }else{
+      this.eType='更新'
+    }
     //时效性
     this.$http({
       url: this.$http.adornUrl('/biz/timeliness/timelinessList'),
@@ -277,27 +268,16 @@ export default {
       }
       this.tagList = dataList
     })
-    /*//专家
-    this.$http({
-      url: this.$http.adornUrl('/biz/user/getIdentityList'),
-      method: 'get',
-      params: this.$http.adornParams({'identity':1})
-    }).then(({data}) => {
-      var dataList=[]
-      for( var i=0;i<data.length;i++){
-        dataList.push(data[i]);
-      }
-      this.userList = dataList
-    })*/
     //详情
     if( this.dataForm.id!=undefined) {
       this.$http({
-        url: this.$http.adornUrl(`/biz/trpolicy/updateAndAuditInfo/${this.dataForm.id}`),
+        url: this.$http.adornUrl(`/biz/trpolicy/auditInfo/${this.dataForm.id}`),
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
-        this.titleTxt="编辑"
         this.addHide=true
+        this.dataForm.applyIdName=data.data.applyIdName
+        this.dataForm.applyTime = data.data.applyTime
         this.dataForm.property=parseInt(data.data.property)
         this.dataForm.policyOriginalId=data.data.policyOriginalId
         this.dataForm.tradeid=data.data.tradeid
@@ -343,6 +323,7 @@ export default {
           }
           this.dataForm.policyOriginalRelativeFiles=data.data.policyOriginalRelativeFiles
         }
+
       })
     }
   },
@@ -379,21 +360,20 @@ export default {
     closePage:function () {
       this.removeTabHandle(this.$store.state.common.mainTabsActiveName)
     },
-    //添加关联条文
-    addFile:function(val){
+    //添加关联文件
+    addFile:function(){
       this.dataForm.policyRelativeFiles.push({
         idShow:'',
         relativePolicyId: '',
         title:'',
         sort:'',
         fileNum:'',
-        type:2,
         key: Date.now()
       });
     },
-    //删除关联条文
-    removeFile:function(index){
-          this.dataForm.policyRelativeFiles.splice(index, 1)
+    //删除关联文件
+    removeFile:function(item,id){
+        this.dataForm.policyRelativeFiles.splice(item, 1)
     },
     //添加关联原文
     addFile_original:function(val){
@@ -411,7 +391,23 @@ export default {
     removeFile_original:function(index){
       this.dataForm.policyOriginalRelativeFiles.splice(index, 1)
     },
-    //搜索政策条文ID
+    //搜索政策原文ID
+    searchFileOriginal(fileIndex,id){
+      this.$http({
+        url: this.$http.adornUrl(`/biz/trpolicyoriginal/info/${id}`),
+        method: 'get',
+        params: this.$http.adornParams()
+      }).then(({data}) => {
+        if(data.data==null){
+          this.$message.error('该政策原文ID不存在')
+        }else {
+          this.dataForm.policyOriginalRelativeFiles[fileIndex].title = data.data.title
+          this.dataForm.policyOriginalRelativeFiles[fileIndex].fileNum = data.data.fileNum
+          this.dataForm.policyOriginalRelativeFiles[fileIndex].relativePolicyId = data.data.id
+        }
+      })
+    },
+    //搜索政策ID
     searchFile(fileIndex,id){
       if(this.dataForm.property==2){
         this.dataForm.tradeid=""
@@ -434,78 +430,114 @@ export default {
         }
       })
     },
-    //搜索政策原文ID
-    searchFileOriginal(fileIndex,id){
-      this.$http({
-        url: this.$http.adornUrl(`/biz/trpolicyoriginal/info/${id}`),
-        method: 'get',
-        params: this.$http.adornParams()
-      }).then(({data}) => {
-        if(data.data==null){
-          this.$message.error('该政策原文ID不存在')
-        }else {
-          this.dataForm.policyOriginalRelativeFiles[fileIndex].title = data.data.title
-          this.dataForm.policyOriginalRelativeFiles[fileIndex].fileNum = data.data.fileNum
-          this.dataForm.policyOriginalRelativeFiles[fileIndex].relativePolicyId = data.data.id
+    //审核未通过
+    fail () {
+      this.$prompt('请输入未通过原因，最少5个字最多输入100字', '审核未通过', {
+        inputType:'textarea',
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputValidator:(val) => {
+          return !(val.length < 5 || val.length > 100)
+        },
+        inputErrorMessage: '！保存失败，您未达到最少字数或超过最大字数'
+      }).then(({ value }) => {
+        var axUrl='';
+        if(this.editType=='online'){
+          axUrl='/biz/trpolicy/onlineAuditNoPass'
+        }else if(this.editType=='update'){
+          axUrl='/biz/trpolicy/updateAuditNoPass'
         }
-      })
+        this.$http({
+          url: this.$http.adornUrl(`${axUrl}`),
+          method: 'GET',
+          params: this.$http.adornParams({'id':this.dataForm.id,'auditFailReason':value})
+        }).then(({data}) => {
+          if (data && data.code == 200) {
+            this.$message({
+              message: '操作成功',
+              type: 'success',
+              duration: 1500,
+              onClose: () => {
+                this.closePage()
+              }
+            })
+          } else {
+            if(data.message==undefined){
+              this.$message.error(data.msg)
+            }else{
+              this.$message.error(data.message)
+            }
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消输入'
+        });
+      });
     },
     //提交表单
     dataFormSubmit () {
-      this.$refs['dataForm'].validate((valid) => {
-        if(this.dataForm.province=="省"||this.dataForm.province==""||this.dataForm.province==null){
-          this.dataForm.province="全国"
-          this.dataForm.region=""
-        }
-        if (valid) {
-          var taxArr="",tagArr=""
-          if(this.dataForm.taxS.length!=0){
-            taxArr=this.dataForm.taxS.join(',')
+      this.$confirm(`您确定审核通过吗？`, ``, {
+        confirmButtonText: `确定`,
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$refs['dataForm'].validate((valid) => {
+          if(this.dataForm.province=="省"||this.dataForm.province==""||this.dataForm.province==null){
+            this.dataForm.province="全国"
+            this.dataForm.region=""
           }
-          if(this.dataForm.tagS.length!=0){
-            tagArr=this.dataForm.tagS.join(',')
-          }
-          /*if(this.dataForm.policyRelativeFiles.length==0){
-            this.dataForm.policyRelativeFiles=""
-          }*/
-          if(this.dataForm.property==2){
-            this.dataForm.tradeid=""
-          }
-          this.$http({
-            url: this.$http.adornUrl(`/biz/trpolicy/${!this.dataForm.id ? 'save' : 'update'}`),
-            method: 'post',
-            data: this.$http.adornData({
-              'id': this.dataForm.id || undefined,
-              'property':this.dataForm.property,
-              'policyOriginalId':parseInt(this.dataForm.policyOriginalId),
-              'content':this.dataForm.content,
-              'tradeid':this.dataForm.tradeid || undefined,
-              'timelinessid':this.dataForm.timelinessid,
-              /*'userid':this.dataForm.userid,*/
-              'tax':taxArr || undefined,
-              'tag':tagArr || undefined,
-              'region':this.dataForm.region || undefined,
-              'province':this.dataForm.province,
-              'policyRelativeFiles':this.dataForm.policyRelativeFiles || undefined,
-              'policyOriginalRelativeFiles':this.dataForm.policyOriginalRelativeFiles || undefined
-            })
-          }).then(({data}) => {
-            if (data && data.code == 200) {
-              this.$message({
-                message: '操作成功',
-                type: 'success',
-                duration: 1500,
-                onClose: () => {
-                  this.closePage()
-                }
-              })
-
-            } else {
-              this.$message.error(data.msg)
-              this.dataForm.province='省'
+          if (valid) {
+            var taxArr='',tagArr=''
+            if(this.dataForm.taxS.length!=0){
+              taxArr=this.dataForm.taxS.join(',')
             }
-          })
-        }
+            if(this.dataForm.tagS.length!=0){
+              tagArr=this.dataForm.tagS.join(',')
+            }
+            var axUrl='';
+            if(this.editType=='online'){
+              axUrl='/biz/trpolicy/onlineAuditPass'
+            }else if(this.editType=='update'){
+              axUrl='/biz/trpolicy/updateAuditPass'
+            }
+            if(this.dataForm.property==2){
+              this.dataForm.tradeid=""
+            }
+            this.$http({
+              url: this.$http.adornUrl(`${axUrl}`),
+              method: 'post',
+              data: this.$http.adornData({
+                'id': this.dataForm.id || undefined,
+                'property':this.dataForm.property,
+                'policyOriginalId':this.dataForm.policyOriginalId,
+                'content':this.dataForm.content,
+                'tradeid':this.dataForm.tradeid || undefined,
+                'tax':taxArr || undefined,
+                'tag':tagArr || undefined,
+                'region':this.dataForm.region|| undefined,
+                'province':this.dataForm.province,
+                'policyRelativeFiles':this.dataForm.policyRelativeFiles || undefined,
+                'policyOriginalRelativeFiles':this.dataForm.policyOriginalRelativeFiles || undefined
+              })
+            }).then(({data}) => {
+              if (data && data.code == 200) {
+                this.$message({
+                  message: '操作成功',
+                  type: 'success',
+                  duration: 1500,
+                  onClose: () => {
+                    this.closePage()
+                  }
+                })
+
+              } else {
+                this.$message.error(data.msg)
+              }
+            })
+          }
+        })
       })
     }
   }

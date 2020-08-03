@@ -1,7 +1,7 @@
 <template>
   <div class="mod-policy">
-    <h2 style="border-bottom: 1px solid #ccc;padding-bottom: 20px;margin-bottom: 50px">{{titleTxt}}</h2>
-    <el-form label-position="left" label-width="120px" :model="dataForm" :rules="dataRule" ref="dataForm">
+    <h2 style="border-bottom: 1px solid #ccc;padding-bottom: 20px;margin-bottom: 50px">审核</h2>
+    <el-form label-position="left" label-width="120px" :model="dataForm"  ref="dataForm">
       <div style="border:1px solid #ccc;padding-left:50px;padding-top:25px;margin-bottom:30px">
         <el-form-item label="解读ID" prop="id" style="display:inline-block">
           <el-input v-model="dataForm.id" :disabled="true" style="width:250px"></el-input>
@@ -16,25 +16,21 @@
           <el-input v-model="dataForm.applyTime" :disabled="true" style="width:250px"></el-input>
         </el-form-item>
       </div>
-      <p><span style="color:red">*</span>选择关联政策</p>
+      <p><span style="color:red">*</span>关联政策</p>
       <div style="border:1px solid #ccc;padding-left:50px;padding-top:10px;margin-bottom:30px;position: relative">
-        <el-form-item style="margin:0 0 10px 0;color:#303133" label="政策ID" prop="policyId"><el-input style="width:220px" v-model="dataForm.idShow"></el-input></el-form-item>
-        <el-button v-show="false" v-model="dataForm.policyId"></el-button>
-        <el-button type="primary" style="float: left;margin-right: 5px;z-index: 1;position: absolute;top: 10px;left: 400px;" @click="searchFile(dataForm.idShow)">搜索</el-button>
+        <el-form-item style="margin:0 0 10px 0;color:#303133" label="政策ID" prop="policyId"><el-input disabled style="width:220px" v-model="dataForm.policyId"></el-input></el-form-item>
         <el-form-item style="display:inline-block;margin: 5px 0 10px 0;color:#303133" label="政策标题"><el-input style="width:220px" disabled v-model="dataForm.policyTitle"></el-input></el-form-item>
         <el-form-item style="display:inline-block;margin: 5px 0 10px 50px;color:#303133" label="政策文件号"><el-input style="width:220px" disabled v-model="dataForm.policyFileNum"></el-input></el-form-item>
         <div style="margin:10px 0"><el-button type="primary" size="mini" v-if="isAuth('biz:trpolicy:info')" @click="$router.push({ name: 'policy-imputation-view',query:{id:dataForm.policyId} })">查看政策</el-button></div>
       </div>
-      <el-form-item label="解读ID" prop="id" v-if="addHide==true">
-        <el-input v-model="dataForm.id" :disabled="true" style="width:220px"></el-input>
-      </el-form-item>
       <el-form-item label="解读标题" prop="expertTitle">
-        <el-input v-model="dataForm.expertTitle" clearable placeholder="请输入解读标题" style="width:500px"></el-input>
+        <el-input v-model="dataForm.expertTitle" :disabled="true" clearable placeholder="请输入解读标题" style="width:500px"></el-input>
       </el-form-item>
       <el-form-item prop="userid" label="作者">
         <el-select
           v-model="dataForm.userid"
           clearable
+          :disabled="true"
           style="width: 220px">
           <el-option v-for="item in userList"
                      :label="item.realname"
@@ -44,19 +40,20 @@
         </el-select>
       </el-form-item>
       <el-form-item label="排序" prop="sort">
-        <el-input-number v-model="dataForm.sort" :disabled="addHide" controls-position="right" :min="1" label="排序"></el-input-number>
+        <el-input-number v-model="dataForm.sort" :disabled="true" controls-position="right" :min="1" label="排序"></el-input-number>
         <p style="color:#999">可填写数字如：“1”，数字越大排序越靠前，该设置决定本篇解读在小程序“相关解读”中的排序情况</p>
       </el-form-item>
-      <el-form-item label="创建时间" prop="createTime" v-if="addHide==true">
+      <el-form-item label="创建时间" prop="createTime" >
         <el-input v-model="dataForm.createTime" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
-          <UEditor :key="'editor_relative_expert'" :val="dataForm.id" :id='"editor_relative_expert"':index="0" :econtent="dataForm.content" :modelname="'relative_expert'" @func="editorContent" ></UEditor>
+          <div v-html="dataForm.content" style="border: 1px solid #ccc;padding:0 10px"></div>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">
-        <el-button type="primary" @click="dataFormSubmit()">保存并审核通过</el-button>
+        <el-button type="primary" @click="closePage();$router.push({ name: 'relative-expert-examine-edit',query:{id:dataForm.id,editType:'online'}})">编辑</el-button>
+        <el-button type="primary" @click="dataFormSubmit()">审核通过</el-button>
         <el-button type="primary" @click="fail()">审核未通过</el-button>
         <el-button type="info" @click="closePage()">关闭</el-button>
       </el-form-item>
@@ -84,13 +81,10 @@ export default {
       headers: {
         token: this.$cookie.get('token')
       },
-      titleTxt:"新增",
-      addHide:false,
       disabledStatus:false,
       userList:[],
       dataForm:{
         id:parseInt(this.$route.query.id) || undefined,
-        idShow:'',
         policyId:'',
         policyTitle:'',
         policyFileNum:'',
@@ -104,23 +98,6 @@ export default {
         status:'',
         applyTime:'',
         applyName:''
-      },
-      dataRule:{
-        policyId:[
-          { required: true, message: '政策ID不能为空', trigger: 'blur' }
-        ],
-        expertTitle: [
-          { required: true, message: '标题不能为空', trigger: 'blur' }
-        ],
-        userid:[
-          { required: true, message: '作者不能为空', trigger: 'blur' }
-        ],
-        content:[
-          {required: true, message: '内容不能为空', trigger: 'blur'}
-        ],
-        sort:[
-          {required: true, message: '排序不能为空', trigger: 'blur'}
-        ]
       }
     }
   },
@@ -152,9 +129,6 @@ export default {
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
-        this.titleTxt="编辑"
-        this.addHide=true
-        this.dataForm.idShow=data.data.policyId
         this.dataForm.policyId=data.data.policyId
         this.dataForm.policyTitle=data.data.policyTitle
         this.dataForm.policyFileNum=data.data.policyFileNum
@@ -172,25 +146,8 @@ export default {
       this.dataForm.province=e.province.value
       this.dataForm.region=e.city.value
     },
-    //获取富文本内容
-    editorContent(modelname,index,content){
-      console.log(modelname)
-      this.dataForm.content=content
-    },
     closePage:function () {
       this.removeTabHandle(this.$store.state.common.mainTabsActiveName)
-    },
-    //搜索政策ID
-    searchFile(id){
-      this.$http({
-        url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/searchPolicyById`),
-        method: 'post',
-        params: this.$http.adornParams({policyId:id})
-      }).then(({data}) => {
-        this.dataForm.policyId=data.data.id
-        this.dataForm.policyFileNum=data.data.fileNum
-        this.dataForm.policyTitle=data.data.title
-      })
     },
     //审核未通过
     fail () {
@@ -240,16 +197,10 @@ export default {
         type: 'warning'
       }).then(() => {
         this.$http({
-          url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/applyOnlinePass`),
+          url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/applyOnlinePassWuContent`),
           method: 'post',
-          data: this.$http.adornData({
-            'id': this.dataForm.id || undefined,
-            'policyId':this.dataForm.policyId,
-            'expertTitle': this.dataForm.expertTitle,
-            'content':this.dataForm.content,
-            'userid':this.dataForm.userid,
-            'sort':this.dataForm.sort ,
-            'status':this.dataForm.status
+          params: this.$http.adornParams({
+            'expertId': this.dataForm.id,
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
@@ -266,36 +217,6 @@ export default {
             this.$message.error(data.msg)
           }
         })
-        /*this.$refs['dataForm'].validate((valid) => {
-          if (valid) {
-            this.$http({
-              url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/${!this.dataForm.id ? 'save' : 'update'}`),
-              method: 'post',
-              data: this.$http.adornData({
-                'id': this.dataForm.id || undefined,
-                'policyId': this.dataForm.policyId,
-                'expertTitle': this.dataForm.expertTitle,
-                'content': this.dataForm.content,
-                'userid': this.dataForm.userid,
-                'sort': this.dataForm.sort || undefined,
-              })
-            }).then(({data}) => {
-              if (data && data.code == 200) {
-                this.$message({
-                  message: '操作成功',
-                  type: 'success',
-                  duration: 1500,
-                  onClose: () => {
-                    this.closePage()
-                  }
-                })
-
-              } else {
-                this.$message.error(data.msg)
-              }
-            })
-          }
-        })*/
       })
     }
   }

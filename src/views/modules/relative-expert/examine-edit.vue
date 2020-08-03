@@ -10,27 +10,31 @@
           <el-input v-model="dataForm.applyName" :disabled="true" style="width:250px"></el-input>
         </el-form-item>
         <el-form-item label="审核类型" style="display:inline-block">
-          <el-input value="申请更新"  :disabled="true" style="width:250px"></el-input>
+          <el-input :value="'申请'+eType"  :disabled="true" style="width:250px"></el-input>
         </el-form-item>
         <el-form-item label="申请时间" prop="applyTime" style="display:inline-block;margin-left:50px">
           <el-input v-model="dataForm.applyTime" :disabled="true" style="width:250px"></el-input>
         </el-form-item>
       </div>
-      <p><span style="color:red">*</span>关联政策</p>
+      <p><span style="color:red">*</span>选择关联政策</p>
       <div style="border:1px solid #ccc;padding-left:50px;padding-top:10px;margin-bottom:30px;position: relative">
-        <el-form-item style="margin:0 0 10px 0;color:#303133" label="政策ID" prop="policyId"><el-input disabled style="width:220px" v-model="dataForm.policyId"></el-input></el-form-item>
+        <el-form-item style="margin:0 0 10px 0;color:#303133" label="政策ID" prop="policyId"><el-input style="width:220px" v-model="dataForm.idShow"></el-input></el-form-item>
+        <el-button v-show="false" v-model="dataForm.policyId"></el-button>
+        <el-button type="primary" style="float: left;margin-right: 5px;z-index: 1;position: absolute;top: 10px;left: 400px;" @click="searchFile(dataForm.idShow)">搜索</el-button>
         <el-form-item style="display:inline-block;margin: 5px 0 10px 0;color:#303133" label="政策标题"><el-input style="width:220px" disabled v-model="dataForm.policyTitle"></el-input></el-form-item>
         <el-form-item style="display:inline-block;margin: 5px 0 10px 50px;color:#303133" label="政策文件号"><el-input style="width:220px" disabled v-model="dataForm.policyFileNum"></el-input></el-form-item>
         <div style="margin:10px 0"><el-button type="primary" size="mini" v-if="isAuth('biz:trpolicy:info')" @click="$router.push({ name: 'policy-imputation-view',query:{id:dataForm.policyId} })">查看政策</el-button></div>
       </div>
+      <el-form-item label="解读ID" prop="id" v-if="addHide==true">
+        <el-input v-model="dataForm.id" :disabled="true" style="width:220px"></el-input>
+      </el-form-item>
       <el-form-item label="解读标题" prop="expertTitle">
-        <el-input v-model="dataForm.expertTitle" disabled clearable placeholder="请输入解读标题" style="width:500px"></el-input>
+        <el-input v-model="dataForm.expertTitle" clearable placeholder="请输入解读标题" style="width:500px"></el-input>
       </el-form-item>
       <el-form-item prop="userid" label="作者">
         <el-select
           v-model="dataForm.userid"
           clearable
-          disabled
           style="width: 220px">
           <el-option v-for="item in userList"
                      :label="item.realname"
@@ -40,20 +44,19 @@
         </el-select>
       </el-form-item>
       <el-form-item label="排序" prop="sort">
-        <el-input-number v-model="dataForm.sort" disabled controls-position="right" :min="1" label="排序"></el-input-number>
+        <el-input-number v-model="dataForm.sort" :disabled="true" controls-position="right" :min="1" label="排序"></el-input-number>
         <p style="color:#999">可填写数字如：“1”，数字越大排序越靠前，该设置决定本篇解读在小程序“相关解读”中的排序情况</p>
       </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
+      <el-form-item label="创建时间" prop="createTime" v-if="addHide==true">
         <el-input v-model="dataForm.createTime" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
-          <div v-html="dataForm.content" style="border: 1px solid #ccc;padding:0 10px"></div>
+          <UEditor :key="'editor_relative_expert'" :val="dataForm.id" :id='"editor_relative_expert"':index="0" :econtent="dataForm.content" :modelname="'relative_expert'" @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">
-        <el-button type="primary" @click="closePage();$router.push({ name: 'relative-expert-examine-edit',query:{id:dataForm.id,editType:'update'}})">编辑</el-button>
-        <el-button type="primary" @click="dataFormSubmit()">审核通过</el-button>
+        <el-button type="primary"  @click="dataFormSubmit()">保存并审核通过</el-button>
         <el-button type="primary" @click="fail()">审核未通过</el-button>
         <el-button type="info" @click="closePage()">关闭</el-button>
       </el-form-item>
@@ -77,14 +80,15 @@ export default {
       }
     };
     return {
+      eType:'上线',
       delFlagShow:false,
       headers: {
         token: this.$cookie.get('token')
       },
-      titleTxt:"新增",
       addHide:false,
       disabledStatus:false,
       userList:[],
+      editType:this.$route.query.editType,
       dataForm:{
         id:parseInt(this.$route.query.id) || undefined,
         idShow:'',
@@ -122,6 +126,11 @@ export default {
     }
   },
   mounted(){
+    if(this.editType=='online'){
+      this.eType='上线'
+    }else{
+      this.eType='更新'
+    }
     //作者
     this.$http({
       url: this.$http.adornUrl('/biz/user/getIdentityList'),
@@ -141,15 +150,14 @@ export default {
         method: 'get',
         params: this.$http.adornParams({expertId:this.dataForm.id})
       }).then(({data}) => {
-        this.dataForm.applyTime=data.data[0].applyTime
-        this.dataForm.applyName=data.data[0].applyName
+          this.dataForm.applyTime=data.data[0].applyTime
+          this.dataForm.applyName=data.data[0].applyName
       })
       this.$http({
         url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/updateinfo/${this.dataForm.id}`),
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
-        this.addHide=true
         this.dataForm.idShow=data.data.policyId
         this.dataForm.policyId=data.data.policyId
         this.dataForm.policyTitle=data.data.policyTitle
@@ -199,8 +207,14 @@ export default {
         },
         inputErrorMessage: '！保存失败，您未达到最少字数或超过最大字数'
       }).then(({ value }) => {
+        var axUrl='';
+        if(this.editType=='online'){
+          axUrl='/biz/trpolicyrelativeexpert/applyOnlineNoPass'
+        }else if(this.editType=='update'){
+          axUrl='/biz/trpolicyrelativeexpert/applyUpdateNoPass'
+        }
         this.$http({
-          url: this.$http.adornUrl('/biz/trpolicyrelativeexpert/applyUpdateNoPass'),
+          url: this.$http.adornUrl(`${axUrl}`),
           method: 'GET',
           params: this.$http.adornParams({'expertId':this.dataForm.id,'auditFailReason':value})
         }).then(({data}) => {
@@ -235,11 +249,23 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        var axUrl='';
+        if(this.editType=='online'){
+          axUrl='/biz/trpolicyrelativeexpert/applyOnlinePass'
+        }else if(this.editType=='update'){
+          axUrl='/biz/trpolicyrelativeexpert/applyUpdatePass'
+        }
         this.$http({
-          url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/applyUpdatePassWuContent`),
+          url: this.$http.adornUrl(`${axUrl}`),
           method: 'post',
-          params: this.$http.adornParams({
-            'expertId': this.dataForm.id
+          data: this.$http.adornData({
+            'id': this.dataForm.id || undefined,
+            'policyId':this.dataForm.policyId,
+            'expertTitle': this.dataForm.expertTitle,
+            'content':this.dataForm.content,
+            'userid':this.dataForm.userid,
+            'sort':this.dataForm.sort ,
+            'status':this.dataForm.status
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
@@ -256,36 +282,6 @@ export default {
             this.$message.error(data.msg)
           }
         })
-        /*this.$refs['dataForm'].validate((valid) => {
-          if (valid) {
-            this.$http({
-              url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/${!this.dataForm.id ? 'save' : 'update'}`),
-              method: 'post',
-              data: this.$http.adornData({
-                'id': this.dataForm.id || undefined,
-                'policyId': this.dataForm.policyId,
-                'expertTitle': this.dataForm.expertTitle,
-                'content': this.dataForm.content,
-                'userid': this.dataForm.userid,
-                'sort': this.dataForm.sort || undefined,
-              })
-            }).then(({data}) => {
-              if (data && data.code == 200) {
-                this.$message({
-                  message: '操作成功',
-                  type: 'success',
-                  duration: 1500,
-                  onClose: () => {
-                    this.closePage()
-                  }
-                })
-
-              } else {
-                this.$message.error(data.msg)
-              }
-            })
-          }
-        })*/
       })
     }
   }
