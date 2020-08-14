@@ -163,6 +163,7 @@
           platform:'',
           tradeid:'',
           status:''
+
         },
         dataList: [],
         platformList:[{label:'新政辅导',value:'1'},{label:'行业辅导',value:'2'}],
