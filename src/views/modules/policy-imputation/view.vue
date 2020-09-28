@@ -42,6 +42,9 @@
       <el-form-item label="政策状态" prop="policyStatusName">
         <el-input v-model="dataForm.policyStatusName" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
+      <el-form-item label="政策附件" prop="annexs">
+        <span style="color:#17B3A3" v-for="item in dataForm.annexList"><a :href="'http://'+item.fileOriginalName">{{item.fileRealName}}</a></span>
+      </el-form-item>
       <el-form-item label="内容" prop="content">
         <div v-html="dataForm.content" style="border: 1px solid #ccc;padding:0 10px"></div>
       </el-form-item>
@@ -191,6 +194,7 @@ export default {
   data(){
     return {
       dataForm:{
+        annexList:[],
         property:'',
         typeName:'',
         id:parseInt(this.$route.query.id) || undefined,
@@ -261,8 +265,9 @@ export default {
           this.dataListOriginal=data.data.policyOriginalRelativeFiles
           this.totalPageOriginal=data.data.policyOriginalRelativeFiles.length
         }
-        this.dataList1=data.data.policyRelativeExperts
-        this.totalPage1=data.data.policyRelativeExperts.length
+        this.dataList1=data.data.policyRelativeExperts;
+        this.totalPage1=data.data.policyRelativeExperts.length;
+        this.dataForm.annexList=data.data.annexList
       })
     }
   },

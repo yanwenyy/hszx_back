@@ -46,6 +46,9 @@
       <el-form-item label="创建时间" prop="createTime">
         <el-input v-model="dataForm.createTime" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
+      <el-form-item label="发布日期" prop="releaseDate" >
+        <el-input v-model="dataForm.releaseDate" :disabled="true" style="width:220px"></el-input>
+      </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
           <div v-html="dataForm.content" style="border: 1px solid #ccc;padding:0 10px"></div>
@@ -86,6 +89,7 @@ export default {
       disabledStatus:false,
       userList:[],
       dataForm:{
+        releaseDate:'',
         id:parseInt(this.$route.query.id) || undefined,
         idShow:'',
         policyId:'',
@@ -149,6 +153,7 @@ export default {
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
+        this.dataForm.releaseDate=data.data.releaseDate;
         this.addHide=true
         this.dataForm.idShow=data.data.policyId
         this.dataForm.policyId=data.data.policyId

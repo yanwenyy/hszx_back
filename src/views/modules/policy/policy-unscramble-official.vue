@@ -14,7 +14,7 @@
         <h2 style="background: #45c2b5;line-height: 36px;color:#fff;padding-left: 10px">内容</h2>
         <el-form-item prop="content">
           <template>
-            <UEditor :key="'official'"  :id='"official_editor"':index="0" :val="dataForm.policyId" :econtent="dataForm.content" :modelname="'official'" @func="editorContent" ></UEditor>
+            <UEditor :contentUrl='"/biz/policyofficial/info/"' :key="'official'"  :id='"official_editor"':index="0" :val="dataForm.policyId" :econtent="dataForm.content" :modelname="'official'" @func="editorContent" ></UEditor>
           </template>
         </el-form-item>
         <el-form-item style="text-align: center;">

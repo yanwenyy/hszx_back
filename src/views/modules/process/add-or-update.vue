@@ -85,7 +85,7 @@
       </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
-          <UEditor :key="'editor_process'" :val="dataForm.id" :url="'/biz/trprocess/info/'" :id='"editor_process"':index="0" :econtent="dataForm.content"  @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/trprocess/info/"' :key="'editor_process'" :val="dataForm.id" :url="'/biz/trprocess/info/'" :id='"editor_process"':index="0" :econtent="dataForm.content"  @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">

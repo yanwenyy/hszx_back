@@ -4,7 +4,9 @@
     <el-form label-position="left" label-width="120px" :model="dataForm" :rules="dataRule" ref="dataForm">
       <p><span style="color:red">*</span>选择关联政策</p>
       <div style="border:1px solid #ccc;padding-left:50px;padding-top:10px;margin-bottom:30px;position: relative">
-        <el-form-item style="margin:0 0 10px 0;color:#303133" label="政策ID" prop="idShow"><el-input style="width:220px" v-model="dataForm.idShow"></el-input></el-form-item>
+        <el-form-item style="margin:0 0 10px 0;color:#303133" label="政策ID" prop="idShow">
+          <el-input style="width:220px" v-model="dataForm.idShow"></el-input>
+        </el-form-item>
         <el-button v-show="false" v-model="dataForm.policyId"></el-button>
         <el-button type="primary" style="float: left;margin-right: 5px;z-index: 1;position: absolute;top: 10px;left: 400px;" @click="searchFile(dataForm.idShow)">搜索</el-button>
         <el-form-item style="display:inline-block;margin: 5px 0 10px 0;color:#303133" label="政策标题"><el-input style="width:220px" disabled v-model="dataForm.policyTitle"></el-input></el-form-item>
@@ -16,17 +18,8 @@
       <el-form-item label="解读标题" prop="expertTitle">
         <el-input v-model="dataForm.expertTitle" clearable placeholder="请输入解读标题" style="width:500px"></el-input>
       </el-form-item>
-      <el-form-item prop="userid" label="作者">
-        <el-select
-          v-model="dataForm.userid"
-          clearable
-          style="width: 220px">
-          <el-option v-for="item in userList"
-                     :label="item.realname"
-                     :value="item.uuid"
-                     :key="item.uuid">
-          </el-option>
-        </el-select>
+      <el-form-item prop="source" label="来源">
+        <el-input v-model="dataForm.source" style="width:220px"></el-input>
       </el-form-item>
       <el-form-item label="排序" prop="sort">
         <el-input-number v-model="dataForm.sort" :disabled="addHide" controls-position="right" :min="1" label="排序"></el-input-number>
@@ -49,7 +42,7 @@
       </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
-          <UEditor :contentUrl='"/biz/trpolicyrelativeexpert/updateinfo/"' :key="'editor_relative_expert'" :val="dataForm.id" :id='"editor_relative_expert"':index="0" :econtent="dataForm.content" :modelname="'relative_expert'" @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/trpolicyoriginalrelativeexpert/info/"' :key="'editor_relative_expert'" :val="dataForm.id" :id='"editor_relative_expert"':index="0" :econtent="dataForm.content" :modelname="'relative_expert'" @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">
@@ -96,7 +89,6 @@ export default {
         content:'',
         userid:'',
         createTime:'',
-        expertTitle:'',
         sort:'',
         status:''
       },
@@ -120,22 +112,10 @@ export default {
     }
   },
   mounted(){
-    //作者
-    this.$http({
-      url: this.$http.adornUrl('/biz/user/getIdentityList'),
-      method: 'get',
-      params: this.$http.adornParams({'identity':1})
-    }).then(({data}) => {
-      var dataList=[]
-      for( var i=0;i<data.length;i++){
-        dataList.push(data[i]);
-      }
-      this.userList = dataList
-    })
     //详情
     if( this.dataForm.id!=undefined) {
       this.$http({
-        url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/updateinfo/${this.dataForm.id}`),
+        url: this.$http.adornUrl(`/biz/trpolicyoriginalrelativeexpert/info/${this.dataForm.id}`),
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
@@ -148,7 +128,7 @@ export default {
         this.dataForm.policyFileNum=data.data.policyFileNum
         this.dataForm.expertTitle = data.data.expertTitle
         this.dataForm.sort = data.data.sort
-        this.dataForm.userid=data.data.userid
+        this.dataForm.source=data.data.source
         this.dataForm.createTime = this.commonDate.formatTime('', '', data.data.createTime)
         this.dataForm.content=data.data.content
         this.dataForm.status=data.data.status
@@ -171,7 +151,7 @@ export default {
     //搜索政策ID
     searchFile(id){
       this.$http({
-        url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/searchPolicyById`),
+        url: this.$http.adornUrl(`/biz/trpolicyoriginalrelativeexpert/searchPolicyOriginalById`),
         method: 'post',
         params: this.$http.adornParams({policyId:id})
       }).then(({data}) => {
@@ -185,14 +165,14 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
           if (valid) {
           this.$http({
-            url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/${!this.dataForm.id ? 'save' : 'update'}`),
+            url: this.$http.adornUrl(`/biz/trpolicyoriginalrelativeexpert/${!this.dataForm.id ? 'save' : 'update'}`),
             method: 'post',
             data: this.$http.adornData({
               'id': this.dataForm.id || undefined,
               'policyId':this.dataForm.policyId,
               'expertTitle': this.dataForm.expertTitle,
               'content':this.dataForm.content,
-              'userid':this.dataForm.userid,
+              'source':this.dataForm.source,
               'sort':this.dataForm.sort || undefined,
               'status':this.dataForm.status,
               'releaseDate':this.dataForm.releaseDate

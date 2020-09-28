@@ -101,9 +101,25 @@
       <el-form-item label="政策状态" prop="policyStatusName" v-if="addHide==true">
         <el-input v-model="dataForm.policyStatusName" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
+      <el-form-item label="政策附件" prop="annexs">
+        <el-upload
+          style="width: 500px"
+          :headers="headers"
+          :on-change="OnChange"
+          :action="UploadUrl()"
+          :on-remove="handleRemove"
+          accept="application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+          :before-remove="beforeRemove"
+          multiple
+          :file-list="fileList">
+          <el-button size="small" type="primary">上传附件</el-button>
+        </el-upload>
+        <span style="color:red">！注:只可上传doc、xls、xlsx、pdf格式的文件</span>
+      </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
-          <UEditor v-if="dataForm.id==undefined||dataForm.content!=''" :key="'editor_imputation'"  :id='"editor_imputation"':index="0" :econtent="dataForm.content" :modelname="'imputation'" @func="editorContent" ></UEditor>
+          <!--v-if="dataForm.id==undefined||dataForm.content!=''"-->
+          <UEditor :contentUrl='"/biz/trpolicy/updateAndAuditInfo/"' :key="'editor_imputation'"  :id='"editor_imputation"':index="0" :econtent="dataForm.content"  :val="dataForm.id" :modelname="'imputation'" @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item label="相关文件">
@@ -191,6 +207,7 @@ export default {
         taxS:[],
         tag:'',
         tagS:[],
+        annexs:[],
         content:'',
        /* userid:'',*/
         province:'',
@@ -331,22 +348,43 @@ export default {
         this.dataForm.createTime = this.commonDate.formatTime('', '', data.data.createTime)
         this.dataForm.policyStatusName=data.data.policyStatusName
         this.dataForm.content=data.data.content
-        if(data.data.policyRelativeFiles!=undefined||data.data.policyRelativeFiles.length!=0){
+        if(data.data.policyRelativeFiles!=undefined||(data.data.policyRelativeFiles&&data.data.policyRelativeFiles.length!=0)){
           for(var i=0;i<data.data.policyRelativeFiles.length;i++){
             data.data.policyRelativeFiles[i].idShow=data.data.policyRelativeFiles[i].relativePolicyId
           }
           this.dataForm.policyRelativeFiles=data.data.policyRelativeFiles
         }
-        if(data.data.policyOriginalRelativeFiles!=undefined||data.data.policyOriginalRelativeFiles.length!=0){
+        if(data.data.policyOriginalRelativeFiles!=undefined||(data.data.policyOriginalRelativeFiles&&data.data.policyOriginalRelativeFiles.length!=0)){
           for(var i=0;i<data.data.policyOriginalRelativeFiles.length;i++){
             data.data.policyOriginalRelativeFiles[i].idShow=data.data.policyOriginalRelativeFiles[i].relativePolicyId
           }
           this.dataForm.policyOriginalRelativeFiles=data.data.policyOriginalRelativeFiles
         }
+        if (data.data.annexList.length != 0) {
+          for (var i = 0; i < data.data.annexList.length; i++) {
+            this.fileList.push({
+              url: data.data.annexList[i].fileOriginalName,
+              name:  data.data.annexList[i].fileRealName
+            })
+          }
+        }
       })
     }
   },
   methods:{
+    UploadUrl:function(){
+      return window.SITE_CONFIG['baseUrl']+'/sys/oss/upload'
+    },
+    OnChange(file,fileList){
+      this.fileList=fileList
+    },
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+      this.fileList=fileList
+    },
+    beforeRemove(file, fileList) {
+      return this.$confirm(`确定移除 ${ file.name }？`);
+    },
     //政策地区
     onChangeProvince(e) {
       this.dataForm.province=e.value
@@ -471,6 +509,17 @@ export default {
           if(this.dataForm.property==2){
             this.dataForm.tradeid=""
           }
+          this.dataForm.annexs=[];
+          for(var i=0;i<this.fileList.length;i++){
+            if(this.fileList[i].response!=undefined){
+
+              this.dataForm.annexs.push({fileRealName:this.fileList[i].name,fileOriginalName:this.fileList[i].response.url})
+              console.log(this.fileList[i].response)
+            }else{
+              this.dataForm.annexs.push({fileRealName:this.fileList[i].name,fileOriginalName:this.fileList[i].url})
+              console.log(this.dataForm.annexs)
+            }
+          }
           this.$http({
             url: this.$http.adornUrl(`/biz/trpolicy/${!this.dataForm.id ? 'save' : 'update'}`),
             method: 'post',
@@ -484,6 +533,7 @@ export default {
               /*'userid':this.dataForm.userid,*/
               'tax':taxArr || undefined,
               'tag':tagArr || undefined,
+              'annexList':this.dataForm.annexs,
               'region':this.dataForm.region || undefined,
               'province':this.dataForm.province,
               'policyRelativeFiles':this.dataForm.policyRelativeFiles || undefined,

@@ -94,7 +94,7 @@ export default {
     //详情
     if( this.dataForm.id!=undefined) {
       this.$http({
-        url: this.$http.adornUrl(`/biz/trpolicyrelativeexpert/info/${this.dataForm.id}`),
+        url: this.$http.adornUrl(`/biz/trpolicyoriginalrelativeexpert/info/${this.dataForm.id}`),
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {

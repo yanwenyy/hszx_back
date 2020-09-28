@@ -26,6 +26,9 @@
       },
       url:{
         type: String
+      },
+      contentUrl:{
+        type: String
       }
     },
     data() {
@@ -44,117 +47,128 @@
 
       this.editor.ready(function() {
         if(_this.val!=null&&_this.val!=undefined){
-          if(_this.modelname=='policyBack'){
-            _this.$http({
-              url: _this.$http.adornUrl(`/biz/policyexpert/info/${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.content)
-              }
-            })
-          }else if(_this.modelname=='official'){
-            _this.$http({
-              url: _this.$http.adornUrl(`/biz/policyofficial/info/${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.content)
-              }
-            })
-          }else if(_this.modelname=='orginal'){
-            _this.$http({
-              url: _this.$http.adornUrl(`/biz/policy/info/${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.content)
-              }
-            })
-          }else if(_this.modelname=='article'){
-            _this.$http({
-              url: _this.$http.adornUrl(`/biz/policy/info/${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.content)
-              }
-            })
-          }else if(_this.modelname=='report_expert'){
-            _this.$http({
-              url: _this.$http.adornUrl(`/biz/report/info/${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.expertForecast)
-              }
-            })
-          }else if(_this.modelname=='report_idea'){
-            _this.$http({
-              url: _this.$http.adornUrl(`/biz/report/info/${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.opinion)
-              }
-            })
-          }else if(_this.modelname=='imputation'){
-            _this.$http({
-              url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.content)
-              }
-            })
-          }else if(_this.modelname=='relative_expert'){
-            _this.$http({
-              url: _this.$http.adornUrl(`/biz/trpolicyrelativeexpert/updateinfo/${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.content)
-              }
-            })
-          }else if(_this.modelname=='good-class'){
-            _this.$http({
-              url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.introduce)
-              }
-            })
-          }else if(_this.modelname=='broadcast'){
-            _this.$http({
-              url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.introduce)
-              }
-            })
-          }else if(_this.modelname==undefined&&_this.url!=undefined){
-            _this.$http({
-              url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
-              method: 'get',
-              params: _this.$http.adornParams()
-            }).then(({data}) => {
-              if(data.code==200&&data.data!=null){
-                _this.editor.setContent( data.data.content)
-              }
-            })
-          }
+          // _this.$emit('ready', _this.editor);
+          _this.$http({
+            url: _this.$http.adornUrl(_this.contentUrl+_this.val),
+            method: 'get',
+            params: _this.$http.adornParams()
+          }).then(({data}) => {
+            if(data.code==200&&data.data!=null){
+              _this.editor.setContent( data.data.content);
+              // console.log(data.data.content)
+            }
+          });
+          // if(_this.modelname=='policyBack'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`/biz/policyexpert/info/${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.content)
+          //     }
+          //   })
+          // }else if(_this.modelname=='official'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`/biz/policyofficial/info/${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.content)
+          //     }
+          //   })
+          // }else if(_this.modelname=='orginal'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`/biz/policy/info/${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.content)
+          //     }
+          //   })
+          // }else if(_this.modelname=='article'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`/biz/policy/info/${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.content)
+          //     }
+          //   })
+          // }else if(_this.modelname=='report_expert'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`/biz/report/info/${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.expertForecast)
+          //     }
+          //   })
+          // }else if(_this.modelname=='report_idea'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`/biz/report/info/${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.opinion)
+          //     }
+          //   })
+          // }else if(_this.modelname=='imputation'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.content)
+          //     }
+          //   })
+          // }else if(_this.modelname=='relative_expert'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`/biz/trpolicyrelativeexpert/updateinfo/${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.content)
+          //     }
+          //   })
+          // }else if(_this.modelname=='good-class'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.introduce)
+          //     }
+          //   })
+          // }else if(_this.modelname=='broadcast'){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.introduce)
+          //     }
+          //   })
+          // }else if(_this.modelname==undefined&&_this.url!=undefined){
+          //   _this.$http({
+          //     url: _this.$http.adornUrl(`${_this.url}${_this.val}`),
+          //     method: 'get',
+          //     params: _this.$http.adornParams()
+          //   }).then(({data}) => {
+          //     if(data.code==200&&data.data!=null){
+          //       _this.editor.setContent( data.data.content)
+          //     }
+          //   })
+          // }
         }
         if(_this.econtent!=null&&_this.econtent!=undefined&&_this.econtent!=""){_this.editor.setContent( _this.econtent)}
 

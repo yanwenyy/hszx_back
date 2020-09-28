@@ -125,7 +125,7 @@
       </el-form-item>
       <el-form-item label="内容" prop="content" v-if="this.dataForm.contentType==2">
         <template>
-          <UEditor :key="'editor_news-center'" :val="dataForm.id" :url="'/biz/trnewscenter/info/'" :id='"editor_news-center"':index="0" :econtent="dataForm.content"  @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/trnewscenter/info/"' :key="'editor_news-center'" :val="dataForm.id" :url="'/biz/trnewscenter/info/'" :id='"editor_news-center"':index="0" :econtent="dataForm.content"  @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">

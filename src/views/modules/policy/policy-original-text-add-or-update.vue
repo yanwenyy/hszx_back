@@ -105,7 +105,7 @@
       <el-form-item label="政策原文" prop="content">
         <template>
          <!-- <div v-model="dataForm.content" id="editor"></div>-->
-          <UEditor :id="'original'" :index="0" :econtent=dataForm.content  :modelname="'orginal'" :val="dataForm.id" @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/policy/info/"' :id="'original'" :index="0" :econtent=dataForm.content  :modelname="'orginal'" :val="dataForm.id" @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">

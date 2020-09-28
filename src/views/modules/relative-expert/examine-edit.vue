@@ -50,9 +50,18 @@
       <el-form-item label="创建时间" prop="createTime" v-if="addHide==true">
         <el-input v-model="dataForm.createTime" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
+      <el-form-item label="发布日期" prop="releaseDate" >
+        <!--<el-input v-model="dataForm.releaseDate" style="width:220px"></el-input>-->
+        <el-date-picker
+          v-model="dataForm.releaseDate"
+          type="date"
+          value-format="yyyy-MM-dd"
+          placeholder="选择日期">
+        </el-date-picker>
+      </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
-          <UEditor :key="'editor_relative_expert'" :val="dataForm.id" :id='"editor_relative_expert"':index="0" :econtent="dataForm.content" :modelname="'relative_expert'" @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/trpolicyrelativeexpert/updateinfo/"' :key="'editor_relative_expert'" :val="dataForm.id" :id='"editor_relative_expert"':index="0" :econtent="dataForm.content" :modelname="'relative_expert'" @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">
@@ -90,6 +99,7 @@ export default {
       userList:[],
       editType:this.$route.query.editType,
       dataForm:{
+        releaseDate:'',
         id:parseInt(this.$route.query.id) || undefined,
         idShow:'',
         policyId:'',
@@ -121,7 +131,10 @@ export default {
         ],
         sort:[
           {required: true, message: '排序不能为空', trigger: 'blur'}
-        ]
+        ],
+        releaseDate:[
+          {required: true, message: '发布日期不能为空', trigger: 'blur'}
+        ],
       }
     }
   },
@@ -158,6 +171,7 @@ export default {
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
+        this.dataForm.releaseDate=data.data.releaseDate;
         this.dataForm.idShow=data.data.policyId
         this.dataForm.policyId=data.data.policyId
         this.dataForm.policyTitle=data.data.policyTitle
@@ -265,7 +279,8 @@ export default {
             'content':this.dataForm.content,
             'userid':this.dataForm.userid,
             'sort':this.dataForm.sort ,
-            'status':this.dataForm.status
+            'status':this.dataForm.status,
+            'releaseDate':this.dataForm.releaseDate
           })
         }).then(({data}) => {
           if (data && data.code == 200) {

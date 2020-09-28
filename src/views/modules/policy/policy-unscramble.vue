@@ -52,7 +52,7 @@
             <h2 style="background: #45c2b5;line-height: 36px;color:#fff;padding-left: 10px">政策背景</h2>
             <el-form-item prop="content">
               <template>
-                <UEditor :id="'policyBack'" :index="0"  :modelname="'policyBack'" :val="dataForm.policyId" @func="editorContent"></UEditor>
+                <UEditor :contentUrl='"/biz/policyexpert/info/"' :id="'policyBack'" :index="0"  :modelname="'policyBack'" :val="dataForm.policyId" @func="editorContent"></UEditor>
               </template>
             </el-form-item>
             <el-form-item style="text-align: center;">

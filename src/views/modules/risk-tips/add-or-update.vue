@@ -73,7 +73,7 @@
       </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
-          <UEditor :key="'editor_risk-tips'" :val="dataForm.id" :url="'/biz/trrisk/info/'" :id='"editor_risk-tips"':index="0" :econtent="dataForm.content"  @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/trrisk/info/"' :key="'editor_risk-tips'" :val="dataForm.id" :url="'/biz/trrisk/info/'" :id='"editor_risk-tips"':index="0" :econtent="dataForm.content"  @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">

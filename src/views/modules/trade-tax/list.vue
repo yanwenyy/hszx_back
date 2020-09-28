@@ -40,6 +40,7 @@
       border
       v-loading="dataListLoading"
       @selection-change="selectionChangeHandle"
+      @sort-change='sortChange'
       style="width: 100%;">
       <el-table-column
         prop="taxId"
@@ -80,6 +81,19 @@
         </template>
       </el-table-column>
       <el-table-column
+        prop="sort"
+        header-align="center"
+        align="center"
+        width="120"
+       sortable="custom"
+        label="排序">
+        <template slot-scope="scope">
+          <el-input type="number" v-model="scope.row.sort" ref="sortDis" :class="'sortDis'+scope.$index" :disabled="scope.row.disabled" style="display:inline-block;width:70px"></el-input>
+          <i class="el-icon-edit" v-show='scope.row.disabled' @click="sortShow(scope.$index)"></i>
+          <i class="el-icon-check" v-show='!scope.row.disabled'  @click="sortUpdate(scope.$index,scope.row.taxId,scope.row.sort)"></i>
+        </template>
+      </el-table-column>
+      <el-table-column
         fixed="right"
         header-align="center"
         align="center"
@@ -115,6 +129,7 @@
           type:'',
           status:''
         },
+        isAsc:'desc',
         dataList: [],
         typeList:[{'label':'政策原文','value':1},{'label':'政策条文','value':2}],
         statusList:[{'label':'在线','value':'1'},{'label':'隐藏','value':'0'}],
@@ -133,6 +148,44 @@
       this.getDataList()
     },
     methods: {
+      sortShow(index){
+        this.dataList[index].disabled=false
+      },
+      sortUpdate(index,id,sort){
+        this.$http({
+          url: this.$http.adornUrl('/biz/trtax/updateSort'),
+          method: 'post',
+          params: this.$http.adornParams({id: id, sort: sort})
+        }).then(({data}) => {
+          if (data && data.code == 200) {
+            this.$message({
+              message: '操作成功',
+              type: 'success',
+              duration: 1500,
+              onClose: () => {
+                // this.dataList[index].disabled=true;
+                this.getDataList();
+              }
+            })
+          } else {
+            if(data.message==undefined){
+              this.$message.error(data.msg)
+            }else{
+              this.$message.error(data.message)
+            }
+          }
+        })
+      },
+      sortChange (column, prop, order){
+        if(column.order=='descending'){
+          column.order='desc'
+        }
+        if(column.order=='ascending'){
+          column.order='asc'
+        }
+        this.isAsc =column.order;
+        this.getDataList()
+      },
       updateShowFlag (id,txt) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
@@ -188,11 +241,15 @@
             'pageNum': this.pageIndex,
             'pageSize': this.pageSize,
             'taxName': this.dataForm.taxName || undefined,
-            'status':this.dataForm.status || undefined,
-            'type':this.dataForm.type || undefined
+            'status': this.dataForm.status || undefined,
+            'type': this.dataForm.type || undefined,
+            'isAsc': this.isAsc
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
+            for(var i=0;i<data.data.list.length;i++) {
+              data.data.list[i].disabled=true
+            }
             this.dataList = data.data.list
             this.totalPage = data.data.totalCount
           } else {

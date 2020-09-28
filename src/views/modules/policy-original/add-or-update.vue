@@ -95,7 +95,8 @@
       </el-form-item>
       <el-form-item label="内容" prop="content">
         <template>
-          <UEditor v-if="dataForm.id==undefined||dataForm.content!=''"  :id='"editor_tr_original"':index="0" :econtent="dataForm.content" :modelname="'tr_original'" @func="editorContent" ></UEditor>
+          <!--v-if="dataForm.id==undefined||dataForm.content!=''"-->
+          <UEditor :contentUrl='"/biz/trpolicyoriginal/info/"'  :id='"editor_tr_original"' :index="0" :econtent="dataForm.content"  :val="dataForm.id" :modelname="'tr_original'" @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">
@@ -294,6 +295,15 @@ export default {
     }
   },
   methods:{
+    editorReady (instance) {
+      if(this.dataForm.id!=undefined){
+        console.log(this.dataForm.content)
+        instance.setContent(this.dataForm.content);
+      }
+      // instance.addListener('contentChange', () => {
+      //   this.dataForm.content = instance.getContent();
+      // });
+    },
     UploadUrl:function(){
       return window.SITE_CONFIG['baseUrl']+'/sys/oss/upload'
     },
@@ -373,13 +383,14 @@ export default {
           }
           this.dataForm.annexs=[];
           for(var i=0;i<this.fileList.length;i++){
-            if(this.fileList[i].response!=undefined){
-
-              this.dataForm.annexs.push({fileRealName:this.fileList[i].name,fileOriginalName:this.fileList[i].response.url})
+            console.log(this.fileList[i])
+            if(this.fileList[i].response){
               console.log(this.fileList[i].response)
+              this.dataForm.annexs.push({fileRealName:this.fileList[i].name,fileOriginalName:this.fileList[i].response.url})
+              console.log(1111)
             }else{
               this.dataForm.annexs.push({fileRealName:this.fileList[i].name,fileOriginalName:this.fileList[i].url})
-              console.log(this.dataForm.annexs)
+              console.log(22222)
             }
           }
           this.$http({

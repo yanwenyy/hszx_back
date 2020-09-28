@@ -69,7 +69,7 @@
       </el-form-item>
       <el-form-item label="政策原文" prop="content">
         <template>
-          <UEditor :id="'article'" :index="0" :econtent=dataForm.content  :modelname="'article'" :val="dataForm.id" @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/policy/info/"' :id="'article'" :index="0" :econtent=dataForm.content  :modelname="'article'" :val="dataForm.id" @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">

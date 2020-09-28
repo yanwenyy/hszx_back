@@ -9,7 +9,7 @@
       <h3 style="line-height: 36px;padding-left: 10px">可能对公司产生的影响参考</h3>
       <el-form-item prop="expertForecast">
         <template>
-          <UEditor :key="'editor_report_expert'" :val="dataForm.policyId" :id='"editor_report_expert"':index="0" :econtent="dataForm.expertForecast" :modelname="'report_expert'" @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/report/info/"' :key="'editor_report_expert'" :val="dataForm.policyId" :id='"editor_report_expert"':index="0" :econtent="dataForm.expertForecast" :modelname="'report_expert'" @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">

@@ -137,7 +137,7 @@
       </el-form-item>
       <el-form-item label="直播介绍" prop="introduce">
         <template>
-          <UEditor :key="'editor_broadcast'" :modelname="'broadcast'" :val="dataForm.id" :url="'/biz/trbroadcast/info/'" :id='"editor_broadcast"':index="0" :econtent="dataForm.introduce"  @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/trbroadcast/info/"' :key="'editor_broadcast'" :modelname="'broadcast'" :val="dataForm.id" :url="'/biz/trbroadcast/info/'" :id='"editor_broadcast"':index="0" :econtent="dataForm.introduce"  @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">

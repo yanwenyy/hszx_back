@@ -20,7 +20,7 @@
           </template>
         </el-form-item>
         <el-form-item label="内容" :prop="'content'+index">
-          <UEditor :key="'contrast_'+index+timer"  :id='"contrast_editor"+index':index="index" :econtent="dataForm.listParts[index].content" :modelname="'content'" @func="editorContent" ></UEditor>
+          <UEditor :key="'contrast_'+index+timer"  :id='"contrast_editor"+index' :index="index" :econtent="dataForm.listParts[index].content" :modelname="'content'" @func="editorContent" ></UEditor>
         </el-form-item>
         <el-form-item label="相关政策">
           <div v-for="(relativePolicys, policysIndex) in dataForm.listParts[index].relativePolicys">

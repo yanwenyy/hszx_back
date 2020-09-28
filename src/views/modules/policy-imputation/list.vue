@@ -141,8 +141,10 @@
             style="display:inline-block;text-align: center;">
             <el-button type="primary">导入</el-button>
           </el-upload>
+        <el-button type="primary" @click="excelDown()">导出</el-button>
         <el-button type="primary" @click="getDataList()">搜索</el-button>
         <el-button type="info" @click="resetForm()" >重置</el-button>
+        <el-button type="danger" v-if="isAuth('biz:trpolicy:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -150,8 +152,14 @@
       border
       v-loading="dataListLoading"
       :header-cell-style="{background: 'rgb(21, 161, 147)',color:'#fff'}"
+      @selection-change="selectionChangeHandle"
       style="width: 100%;">
-
+      <el-table-column
+        type="selection"
+        header-align="center"
+        align="center"
+        width="50">
+      </el-table-column>
       <el-table-column
         prop="id"
         header-align="center"
@@ -358,7 +366,7 @@
           dataList.push(data.data[i]);
         }
         this.tradeList = dataList
-      })
+      });
       //税种
       this.$http({
         url: this.$http.adornUrl('/biz/trtax/trTaxList'),
@@ -397,6 +405,70 @@
       })
     },
     methods: {
+      //导出
+      excelDown(){
+        var releaseStartTime='',releaseLastTime='',createTimeStart='',createTimeEnd=''
+        if(this.dataForm.releaseTime!=undefined&&this.dataForm.releaseTime!=""&&this.dataForm.releaseTime!=null&&this.dataForm.releaseTime.length!=0){
+          releaseStartTime=this.dataForm.releaseTime[0]
+          releaseLastTime=this.dataForm.releaseTime[1]
+        }
+        if(this.dataForm.createTime!=undefined&&this.dataForm.createTime!=""&&this.dataForm.createTime!=null&&this.dataForm.createTime.length!=0){
+          createTimeStart=this.dataForm.createTime[0]
+          createTimeEnd=this.dataForm.createTime[1]
+        }
+        this.$http({
+          url: this.$http.adornUrl('/biz/trpolicy/downExcel'),
+          method: 'get',
+          responseType: "blob",
+          params: this.$http.adornParams({
+            'id':this.dataForm.id|| undefined,
+            'policyOriginalId':this.dataForm.policyOriginalId|| undefined,
+            'tag':this.dataForm.tag|| undefined,
+            'property':this.dataForm.property|| undefined,
+            'title':this.dataForm.title|| undefined,
+            'fileNum':this.dataForm.fileNum|| undefined,
+            'tradeid':this.dataForm.tradeid|| undefined,
+            'timelinessid':this.dataForm.timelinessid|| undefined,
+            'tax':this.dataForm.tax|| undefined,
+            'province':this.dataForm.province|| undefined,
+            'region':this.dataForm.region|| undefined,
+            'auditStatus':this.dataForm.auditStatus|| undefined,
+            'policyStatus':this.dataForm.policyStatus|| undefined,
+            'releaseStartTime':releaseStartTime || undefined,
+            'releaseLastTime':releaseLastTime || undefined,
+            'createTimeStart':createTimeStart || undefined,
+            'createTimeEnd':createTimeEnd || undefined
+          })
+        }).then(res => {
+          let content = res.data;
+          let blob = new Blob([content]);
+          let fileName = res.headers
+          fileName = fileName["content-disposition"]
+          fileName = fileName.split(";")[1].split("filename=")[1];
+          if ("download" in document.createElement("a")) {
+            // 非IE下载
+            let elink = document.createElement("a");
+            elink.download = decodeURI(fileName);  ;
+            elink.style.display = "none";
+            elink.href = URL.createObjectURL(blob);
+            document.body.appendChild(elink);
+            elink.click();
+            URL.revokeObjectURL(elink.href); // 释放URL 对象
+            document.body.removeChild(elink);
+          } else {
+            // IE10+下载
+            navigator.msSaveBlob(blob, fileName);
+          }
+          this.$message.success("生成文件成功");
+        }).catch(err => {
+          console.log(err);
+          this.$message.error("无匹配政策数据");
+        });
+      },
+      // 多选
+      selectionChangeHandle (val) {
+        this.dataListSelections = val
+      },
       //重置搜索条件
       resetForm(){
 
@@ -465,11 +537,15 @@
       },
       // 删除
       deleteHandle (id,status) {
+        var policyId = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        });
+        console.log(policyId)
         if(status==1){
           this.$alert('该政策为“在线”状态，不可删除，您可以申请下线后重新操作！', '提示', {confirmButtonText: '我知道了'});
           return false
         }
-        this.$confirm(`您确定要删除该政策吗？`, ``, {
+        this.$confirm(`您确定要删除${policyId.length > 1 ? '[id=' + policyId.join(',') + ']':'该'}政策吗？`, ``, {
           confirmButtonText: `确定`,
           cancelButtonText: '取消',
           type: 'warning'
@@ -477,7 +553,7 @@
           this.$http({
             url: this.$http.adornUrl('/biz/trpolicy/delete'),
             method: 'post',
-            data: this.$http.adornData(id,false)
+            data: this.$http.adornData(policyId,false)
           }).then(({data}) => {
             if (data && data.code == 200) {
               this.$message({

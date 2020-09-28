@@ -9,7 +9,7 @@
       <h3 style="line-height: 36px;padding-left: 10px">您的建议或意见参考</h3>
       <el-form-item prop="content">
         <template>
-          <UEditor :key="'editor_report_idea'"  :id='"editor_report_idea"':val="dataForm.policyId" :index="0" :econtent="dataForm.opinion" :modelname="'report_idea'" @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/report/info/"' :key="'editor_report_idea'"  :id='"editor_report_idea"':val="dataForm.policyId" :index="0" :econtent="dataForm.opinion" :modelname="'report_idea'" @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">

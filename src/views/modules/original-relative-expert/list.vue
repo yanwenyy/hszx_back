@@ -2,7 +2,7 @@
   <div class="mod-policy">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
-        <el-button type="warning" v-if="isAuth('biz:trpolicyrelativeexpert:save')" @click="$router.push({ name: 'relative-expert-add-or-update'})">新增</el-button>
+        <el-button type="warning" v-if="isAuth('biz:trpolicyoriginalrelativeexpert:save')" @click="$router.push({ name: 'original-relative-expert-add-or-update'})">新增</el-button>
       </el-form-item>
       <el-form-item>
         <el-input v-model="dataForm.id" placeholder="解读ID" clearable></el-input>
@@ -11,16 +11,7 @@
         <el-input v-model="dataForm.expertTitle" placeholder="解读标题" clearable></el-input>
       </el-form-item>
       <el-form-item>
-        <el-select
-          v-model="dataForm.userid"
-          clearable
-          placeholder="作者" style="width: 150px">
-          <el-option v-for="item in userList"
-                     :label="item.realname"
-                     :value="item.uuid"
-                     :key="item.uuid">
-          </el-option>
-        </el-select>
+        <el-input v-model="dataForm.source" placeholder="来源" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-input v-model="dataForm.policyId" placeholder="政策ID" clearable></el-input>
@@ -30,18 +21,6 @@
       </el-form-item>
       <el-form-item>
         <el-input v-model="dataForm.policyFileNum" placeholder="政策文件号" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-select
-          v-model="dataForm.tradeid"
-          clearable
-          placeholder="行业" style="width: 150px">
-          <el-option v-for="item in tradeList"
-                     :label="item.tradeName"
-                     :value="item.tradeId"
-                     :key="item.tradeId" >
-          </el-option>
-        </el-select>
       </el-form-item>
       <el-form-item label="创建时间">
         <el-date-picker
@@ -53,34 +32,20 @@
           end-placeholder="结束日期">
         </el-date-picker>
       </el-form-item>
-      <el-form-item>
-        <el-select
-          v-model="dataForm.status"
-          clearable
-          placeholder="解读状态" style="width: 150px">
-          <el-option v-for="item in statusList"
-                     :label="item.label"
-                     :value="item.value"
-                     :key="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-select
-          v-model="dataForm.auditStatus"
-          clearable
-          placeholder="审核状态" style="width: 150px">
-          <el-option v-for="item in examineList"
-                     :label="item.label"
-                     :value="item.value"
-                     :key="item.value">
-          </el-option>
-        </el-select>
+      <el-form-item label="发布时间">
+        <el-date-picker
+          v-model="dataForm.releaseDate"
+          type="daterange"
+          range-separator="一"
+          value-format="yyyy-MM-dd"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期">
+        </el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="getDataList()">搜索</el-button>
         <el-button type="info" @click="resetForm()" >重置</el-button>
-        <el-button type="danger" v-if="isAuth('biz:trpolicyrelativeexpert:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button type="danger" v-if="isAuth('biz:trpolicyoriginalrelativeexpert:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -89,6 +54,7 @@
       v-loading="dataListLoading"
       :header-cell-style="{background: 'rgb(21, 161, 147)',color:'#fff'}"
       @selection-change="selectionChangeHandle"
+      @sort-change='sortChange'
       style="width: 100%;">
       <el-table-column
         type="selection"
@@ -110,34 +76,26 @@
         label="解读标题">
       </el-table-column>
       <el-table-column
-        prop="realName"
-        header-align="center"
-        align="center"
-        label="作者">
-      </el-table-column>
-      <el-table-column
         prop="policyId"
         header-align="center"
         align="center"
         label="政策ID">
       </el-table-column>
       <el-table-column
-        prop="tradeName"
-        header-align="center"
-        align="center"
-        label="关联行业">
-      </el-table-column>
-      <el-table-column
-        prop="policyTitle"
-        header-align="center"
-        align="center"
-        label="关联政策标题">
-      </el-table-column>
-      <el-table-column
         prop="policyFileNum"
         header-align="center"
         align="center"
+        sortabel
         label="关联政策文件号">
+      </el-table-column>
+      <el-table-column
+        prop="releaseDate"
+        header-align="center"
+        align="center"
+        width="120px"
+        :formatter="commonDate.formatTime"
+        sortable="custom"
+        label="发布日期">
       </el-table-column>
       <el-table-column
         prop="createTime"
@@ -145,6 +103,7 @@
         align="center"
         width="120px"
         :formatter="commonDate.formatTime"
+        sortable="custom"
         label="创建时间">
       </el-table-column>
       <el-table-column
@@ -153,7 +112,8 @@
         align="center"
         label="解读状态">
         <template slot-scope="scope">
-          <span>{{scope.row.status==1?'在线':'隐藏'}}</span>
+          <el-button type="text" v-if="scope.row.status==0" @click="updateShowFlag(scope.row.id,0)">隐藏</el-button>
+          <el-button type="text" v-if="scope.row.status==1" @click="updateShowFlag(scope.row.id,1)">在线</el-button>
         </template>
       </el-table-column>
       <el-table-column
@@ -169,46 +129,15 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="auditStatusName"
-        header-align="center"
-        align="center"
-        label="审核状态">
-        <template slot-scope="scope">
-          <span>{{scope.row.auditStatus | formatAuditStatus}}</span>
-          <i class="el-icon-search" v-if="isAuth('biz:trpolicyrelativeexpert:expertAduitRecprd')" @click="$router.push({ name: 'relative-expert-examine-record',query:{id:scope.row.id,title:scope.row.expertTitle} })"></i>
-        </template>
-      </el-table-column>
-      <el-table-column
-        width="150"
-        header-align="center"
-        align="center"
-        label="审核操作">
-        <template slot-scope="scope">
-          <div>
-            <el-button style="color:#1e88e5" type="text" size="mini" v-if="isAuth('biz:trpolicyrelativeexpert:applyOnline')" @click="online(scope.row.id)" v-show="scope.row.status==0&&scope.row.passAndE!=1&&scope.row.auditStatus!=2">申请上线</el-button>
-            <el-button style="color:orange" type="text" size="mini" v-if="isAuth('biz:trpolicyrelativeexpert:applyUpdate')" v-show="scope.row.passAndE==1&&scope.row.auditStatus!=2" @click="update(scope.row.id)">申请更新</el-button>
-            <el-button type="text" style="color:#000" size="mini" v-if="isAuth('biz:trpolicyrelativeexpert:applyDownline')" v-show="scope.row.status==1&&scope.row.auditStatus!=2"  @click="offline(scope.row.id)">申请下线</el-button>
-          </div>
-          <div>
-            <el-button style="color:#67c23a" type="text" size="mini" v-if="isAuth('biz:trpolicyrelativeexpert:auditOnline')" @click="$router.push({ name: 'relative-expert-examine-online',query:{id:scope.row.id} })" v-show="scope.row.status==0&&scope.row.auditStatus==2">上线审核</el-button>
-            <el-button style="color:red" type="text" size="mini" v-if="isAuth('biz:trpolicyrelativeexpert:auditUpdate')" @click="$router.push({ name: 'relative-expert-examine-update',query:{id:scope.row.id} })" v-show="scope.row.status==1&&scope.row.auditStatus==2&&scope.row.auditOperate==2">更新审核</el-button>
-            <el-button type="text" size="mini" v-if="isAuth('biz:trpolicyrelativeexpert:auditDownline')" v-show="scope.row.status==1&&scope.row.auditStatus==2&&scope.row.auditOperate==3" @click="$router.push({ name: 'relative-expert-examine-offline',query:{id:scope.row.id} })">下线审核</el-button>
-          </div>
-        </template>
-      </el-table-column>
-      </el-table-column>
-      <el-table-column
         fixed="right"
         header-align="center"
         align="center"
         width="200"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" v-if="isAuth('biz:operatelog:list')" @click="$router.push({ name: 'relative-expert-record',query:{id:scope.row.id,title:scope.row.expertTitle} })">操作记录</el-button>
-          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyrelativeexpert:update')" v-show="scope.row.auditStatus!=2" @click="$router.push({ name: 'relative-expert-add-or-update',query:{id:scope.row.id} })">编辑</el-button>
-          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyrelativeexpert:update')" v-show="scope.row.auditStatus==2" @click="editHandle()">编辑</el-button>
-          <el-button type="text" size="small" @click="$router.push({ name: 'relative-expert-view',query:{id:scope.row.id} })">查看</el-button>
-          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyrelativeexpert:delete')" @click="deleteHandle(scope.row.id,scope.row.status)">删除</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginalrelativeexpert:update')" v-show="scope.row.auditStatus!=2" @click="$router.push({ name: 'original-relative-expert-add-or-update',query:{id:scope.row.id} })">编辑</el-button>
+          <el-button type="text" size="small" @click="$router.push({ name: 'original-relative-expert-view',query:{id:scope.row.id} })">查看</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginalrelativeexpert:delete')" @click="deleteHandle(scope.row.id,scope.row.status)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -232,14 +161,17 @@
         dataForm: {
           id:'',
           expertTitle:'',
-          userid:'',
+          source:'',
           policyId:'',
           policyTitle:'',
           policyFileNum:'',
           tradeid:'',
           status:'',
           auditStatus:'',
-          createTime:''
+          createTime:'',
+          releaseDate:'',
+          releaseDateIsAsc:'',
+          createTimeIsAsc:'',
         },
         userList:[],
         tradeList:[],
@@ -272,18 +204,6 @@
       }
     },
     mounted(){
-      //作者
-      this.$http({
-        url: this.$http.adornUrl('/biz/user/getIdentityList'),
-        method: 'get',
-        params: this.$http.adornParams({'identity':1})
-      }).then(({data}) => {
-        var dataList=[]
-        for( var i=0;i<data.length;i++){
-          dataList.push(data[i]);
-        }
-        this.userList = dataList
-      })
       //行业
       this.$http({
         url: this.$http.adornUrl('/biz/trade2/trade2PolicyList'),
@@ -298,6 +218,75 @@
       })
     },
     methods: {
+      sortChange (column, prop, order){
+        console.log(column);
+        var _order=column.order,
+            _prop=column.prop;
+        if(_order=='descending'){
+          if(_prop=='releaseDate'){
+            this.dataForm.releaseDateIsAsc='desc';
+            this.dataForm.createTimeIsAsc=''
+          }else if(_prop=='createTime'){
+            this.dataForm.createTimeIsAsc='desc';
+            this.dataForm.releaseDateIsAsc=''
+          }
+        }
+        if(_order=='ascending'){
+          if(_prop=='releaseDate'){
+            this.dataForm.releaseDateIsAsc='asc';
+            this.dataForm.createTimeIsAsc=''
+          }else if(_prop=='createTime'){
+            this.dataForm.createTimeIsAsc='asc'
+            this.dataForm.releaseDateIsAsc=''
+          }
+        }
+        console.log(this.dataForm.releaseDateIsAsc+'===>'+this.dataForm.createTimeIsAsc)
+        this.getDataList()
+      },
+      //在线,隐藏
+      updateShowFlag (id,txt) {
+        var ajaxUrl=''
+        var ajaxtxt=''
+        if(txt==1){
+          //在线--》隐藏
+          ajaxUrl='/biz/trpolicyoriginalrelativeexpert/zaiToCang';
+          ajaxtxt='您确定进行隐藏操作吗？'
+        }else{
+          ajaxUrl='/biz/trpolicyoriginalrelativeexpert/yinToZai';
+          ajaxtxt='您确定进行在线操作吗？'
+        }
+        this.$confirm(`${ajaxtxt}`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+
+          this.$http({
+            url: this.$http.adornUrl(`${ajaxUrl}`),
+            method: 'post',
+            params: this.$http.adornParams({
+              'id': id
+            })
+          }).then(({data}) => {
+            if (data && data.code == 200) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              if(data.message==undefined){
+                this.$message.error(data.msg)
+              }else{
+                this.$message.error(data.message)
+              }
+            }
+          })
+        }).catch(() => {})
+      },
       // 多选
       selectionChangeHandle (val) {
         this.dataListSelections = val
@@ -307,7 +296,7 @@
       },
       sortUpdate(index,id,sort){
         this.$http({
-          url: this.$http.adornUrl('/biz/trpolicyrelativeexpert/updateSort'),
+          url: this.$http.adornUrl('/biz/trpolicyoriginalrelativeexpert/updateSort'),
           method: 'post',
           params: this.$http.adornParams({id:id,sort:sort},false)
         }).then(({data}) => {
@@ -398,7 +387,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/biz/trpolicyrelativeexpert/delete'),
+            url: this.$http.adornUrl('/biz/trpolicyoriginalrelativeexpert/delete'),
             method: 'post',
             data: this.$http.adornData(policyId,false)
           }).then(({data}) => {
@@ -421,62 +410,6 @@
           })
         })
       },
-      // 申请上线
-      online (id) {
-
-        this.confirmFn('您确定要申请上线吗？','提交后，1-2个工作日为您审核，审核中将不能修改该政策。','提交申请','/biz/trpolicyrelativeexpert/applyOnline/',id)
-      },
-      //申请更新
-      update (id) {
-        var ids = id ? [id] : this.dataListSelections.map(item => {
-          return item.id
-        })
-        this.confirmFn('您确定要申请更新吗？','提交后，1-2个工作日为您审核，审核中将不能修改该政策。','提交申请','/biz/trpolicyrelativeexpert/applyUpdate/',ids)
-      },
-      //申请下线
-      offline (id) {
-        var ids = id ? [id] : this.dataListSelections.map(item => {
-          return item.id
-        })
-
-        this.$prompt('请输入下线原因，最少5个字最多输入100字', '申请下线', {
-          inputType:'textarea',
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputValidator:(val) => {
-            return !(val.length < 5 || val.length > 100)
-          },
-          inputErrorMessage: '！保存失败，您未达到最少字数或超过最大字数'
-        }).then(({ value }) => {
-          this.$http({
-            url: this.$http.adornUrl('/biz/trpolicyrelativeexpert/applyDownline'),
-            method: 'GET',
-            params: this.$http.adornParams({'id':id,'downlineReason':value})
-          }).then(({data}) => {
-            if (data && data.code == 200) {
-              this.$message({
-                message: '操作成功',
-                type: 'success',
-                duration: 1500,
-                onClose: () => {
-                  this.getDataList()
-                }
-              })
-            } else {
-              if(data.message==undefined){
-                this.$message.error(data.msg)
-              }else{
-                this.$message.error(data.message)
-              }
-            }
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '取消输入'
-          });
-        });
-      },
       // 获取数据列表
       getDataList () {
         var createTimeStart='',createTimeEnd=''
@@ -486,36 +419,38 @@
         }
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/biz/trpolicyrelativeexpert/list'),
+          url: this.$http.adornUrl('/biz/trpolicyoriginalrelativeexpert/list'),
           method: 'get',
           params: this.$http.adornParams({
             'pageNum': String(this.pageIndex),
             'pageSize': String(this.pageSize),
             'id':this.dataForm.id|| undefined,
             'expertTitle':this.dataForm.expertTitle|| undefined,
-            'userid':this.dataForm.userid|| undefined,
+            'source':this.dataForm.source|| undefined,
             'policyId':this.dataForm.policyId|| undefined,
             'policyTitle':this.dataForm.policyTitle|| undefined,
             'policyFileNum':this.dataForm.policyFileNum|| undefined,
             'tradeid':this.dataForm.tradeid|| undefined,
-            'status':this.dataForm.status|| undefined,
-            'auditStatus':this.dataForm.auditStatus|| undefined,
             'createTimeStart':createTimeStart || undefined,
-            'createTimeEnd':createTimeEnd || undefined
+            'createTimeEnd':createTimeEnd || undefined,
+            'releaseDateStart':this.dataForm.releaseDate&&this.dataForm.releaseDate[0] || undefined,
+            'releaseDateEnd':this.dataForm.releaseDate&&this.dataForm.releaseDate[1] || undefined,
+            'releaseDateIsAsc':this.dataForm.releaseDateIsAsc,
+            'createTimeIsAsc':this.dataForm.createTimeIsAsc,
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
-           for(var i=0;i<data.data.list.length;i++) {
-             data.data.list[i].disabled=true
-           }
-          this.dataList = data.data.list
-          this.totalPage = data.data.totalCount
-        } else {
-          this.dataList = []
-          this.totalPage = 0
-        }
-        this.dataListLoading = false
-      })
+            for(var i=0;i<data.data.list.length;i++) {
+              data.data.list[i].disabled=true
+            }
+            this.dataList = data.data.list
+            this.totalPage = data.data.totalCount
+          } else {
+            this.dataList = []
+            this.totalPage = 0
+          }
+          this.dataListLoading = false
+        })
       },
       // 每页数
       sizeChangeHandle (val) {
@@ -533,10 +468,10 @@
   }
 </script>
 <style>
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-}
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
   input[type="number"]{
     -moz-appearance: textfield;
     width:60px !important;

@@ -72,7 +72,7 @@
       </el-form-item>
       <el-form-item label="课程介绍" prop="introduce">
         <template>
-          <UEditor :key="'editor_good-class'" :modelname="'good-class'" :val="dataForm.id" :url="'/biz/trgoodclass/info/'" :id='"editor_good-class"':index="0" :econtent="dataForm.introduce"  @func="editorContent" ></UEditor>
+          <UEditor :contentUrl='"/biz/trgoodclass/info/"' :key="'editor_good-class'" :modelname="'good-class'" :val="dataForm.id" :url="'/biz/trgoodclass/info/'" :id='"editor_good-class"':index="0" :econtent="dataForm.introduce"  @func="editorContent" ></UEditor>
         </template>
       </el-form-item>
       <el-form-item style="text-align: center;">

@@ -103,6 +103,7 @@
         <el-button type="primary" @click="excelDown()">导出</el-button>
         <el-button type="primary" @click="getDataList()">搜索</el-button>
         <el-button type="info" @click="resetForm()" >重置</el-button>
+        <el-button type="danger" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -111,8 +112,14 @@
       v-loading="dataListLoading"
       @sort-change='sortChange'
       :header-cell-style="{background: 'rgb(21, 161, 147)',color:'#fff'}"
+      @selection-change="selectionChangeHandle"
       style="width: 100%;">
-
+      <el-table-column
+        type="selection"
+        header-align="center"
+        align="center"
+        width="50">
+      </el-table-column>
       <el-table-column
         prop="id"
         header-align="center"
@@ -305,6 +312,10 @@
       })
     },
     methods: {
+      // 多选
+      selectionChangeHandle (val) {
+        this.dataListSelections = val
+      },
       //重置搜索条件
       resetForm(){
         this.dataForm={
@@ -388,7 +399,10 @@
       },
       // 删除
       deleteHandle (id,status) {
-        this.$confirm(`您确定要删除该政策原文吗？`, ``, {
+        var policyId = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        });
+        this.$confirm(`您确定要删除${policyId.length > 1 ? '[id=' + policyId.join(',') + ']':'该'}政策原文吗？`, ``, {
           confirmButtonText: `确定`,
           cancelButtonText: '取消',
           type: 'warning'
@@ -396,7 +410,7 @@
           this.$http({
             url: this.$http.adornUrl('/biz/trpolicyoriginal/delete'),
             method: 'post',
-            data: this.$http.adornData([id],false)
+            data: this.$http.adornData(policyId,false)
           }).then(({data}) => {
             if (data && data.code == 200) {
               this.$message({
