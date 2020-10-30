@@ -2,45 +2,34 @@
   <div class="mod-policy">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
-        <el-button type="warning" v-if="isAuth('biz:trpolicyoriginal:save')" @click="$router.push({ name: 'policy-original-add-or-update'})">新增</el-button>
+        <el-button type="warning" v-if="isAuth('biz:trpolicyoriginal:save')" @click="$router.push({ name: 'city-add-or-update'})">新增</el-button>
       </el-form-item>
       <el-form-item>
-        <el-select
-          v-model="dataForm.moudle"
-          clearable
-          placeholder="模块名称" style="width: 150px">
-          <el-option v-for="item in moudelList"
-                     :label="item.label"
-                     :value="item.value"
-                     :key="item.value" >
+        <el-input v-model="dataForm.id" placeholder="中心ID" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-select clearable
+          v-model="dataForm.name"
+          placeholder="中心名称">
+          <el-option v-for="item in nameList"
+                     :label="item.name"
+                     :value="item.name"
+                     :key="item.name">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-input :disabled="dataForm.moudle==''" v-model="dataForm.moudleId" placeholder="评论主体id" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-select
+        <el-select clearable
           v-model="dataForm.level"
-          clearable
-          placeholder="属性" style="width: 150px">
-          <el-option v-for="item in attributeList"
+          placeholder="中心等级">
+          <el-option v-for="item in djList"
                      :label="item.label"
                      :value="item.value"
-                     :key="item.value" >
+                     :key="item.value">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item>
-        <el-input v-model="dataForm.content" placeholder="评论内容" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-input v-model="dataForm.trPolicyTtle" placeholder="关联政策标题" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-input v-model="dataForm.trPolicyFileNum" placeholder="关联政策文件号" clearable></el-input>
-      </el-form-item>
-      <el-form-item label="创建时间">
+      <el-form-item label="添加时间">
         <el-date-picker
           v-model="dataForm.createTime"
           type="daterange"
@@ -50,77 +39,73 @@
           end-placeholder="结束日期">
         </el-date-picker>
       </el-form-item>
-
       <el-form-item>
         <el-button type="primary" @click="getDataList()">搜索</el-button>
         <el-button type="info" @click="resetForm()" >重置</el-button>
-        <el-button type="danger" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <!--<el-button type="danger" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>-->
       </el-form-item>
     </el-form>
     <el-table
       :data="dataList"
       border
       v-loading="dataListLoading"
+      @sort-change='sortChange'
       :header-cell-style="{background: 'rgb(21, 161, 147)',color:'#fff'}"
       @selection-change="selectionChangeHandle"
       style="width: 100%;">
       <el-table-column
-        type="selection"
-        header-align="center"
-        align="center"
-        width="50">
-      </el-table-column>
-      <el-table-column
-        prop="moudle"
+        prop="id"
         header-align="center"
         align="center"
         width="80"
-        label="模块">
-        <template slot-scope="scope">
-          <span>{{getMoudel(scope.row.moudle)}}</span>
-        </template>
+        label="ID">
       </el-table-column>
       <el-table-column
-        prop="moudleId"
+        prop="name"
         header-align="center"
         align="center"
-        label="评论主体ID">
+        label="中心名称">
       </el-table-column>
       <el-table-column
-        prop="content"
+        prop="shareBase"
         header-align="center"
         align="center"
-        width="120px"
-        label="评论内容">
+        label="中心占股">
       </el-table-column>
       <el-table-column
         prop="level"
         header-align="center"
         align="center"
-        label="属性">
+        label="等级">
         <template slot-scope="scope">
-          <span>{{scope.row.level==1?'评论':'回复'}}</span>
+          {{ scope.row.level==0?'总代':scope.row.level==1?'1级':scope.row.level==2?'2级':scope.row.level==3?'3级':'无'}}
         </template>
       </el-table-column>
       <el-table-column
-        prop="userName"
+        prop="shareholderNum"
         header-align="center"
         align="center"
-        label="评论人">
+        label="股东数量">
       </el-table-column>
       <el-table-column
-        prop="phone"
+        prop="agentNum"
         header-align="center"
         align="center"
-        label="评论人手机号">
+        label="代理商数量">
       </el-table-column>
       <el-table-column
-        prop="careadateFormat"
+        prop="saleNum"
         header-align="center"
         align="center"
-        width="120px"
-        :formatter="commonDate.formatTime"
-        label="创建时间">
+        label="中心销售">
+      </el-table-column>
+      <el-table-column
+        prop="createTime"
+        header-align="center"
+        align="center"
+        sortable="custom"
+        :formatter="commonDate.formatDate"
+        label="添加时间">
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -129,8 +114,10 @@
         width="200"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:info')" @click="$router.push({ name: 'discuss-view',query:{id:scope.row.id} })">查看</el-button>
-          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle(scope.row.id)">删除</el-button>
+          <!--<el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:update')"  @click="setMaganger()">设置后台管理员</el-button>-->
+          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:update')"  @click="$router.push({ name: 'city-add-or-update',query:{id:scope.row.id} })">编辑</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:info')" @click="$router.push({ name: 'city-view',query:{id:scope.row.id} })">查看</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle(scope.row.id,scope.row.name)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -143,76 +130,80 @@
       :total="totalPage"
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
+    <!-- 添加管理员 -->
+    <City-Manerger v-if="managerVisible" ref="Maganer" @refreshDataList="getDataList"></City-Manerger>
   </div>
 </template>
 
 <script>
+  import CityManerger from './city-manager'
   export default {
+    components: {CityManerger},
     data () {
       return {
         myHeaders: {
           token: this.$cookie.get('token')
         },
         dataForm: {
-          moudle:'',
+          id:'',
+          name:'',
           level:'',
-          moudleId:'',
-          content:'',
-          trPolicyTtle:'',
-          trPolicyFileNum:'',
           createTime:'',
         },
-        moudelList:[
+        managerVisible:false,
+        djList:[
           {
-            value:'1',
-            label:'政策归集'
-          },{
-            value:'2',
-            label:'相关解读'
-          },{
-            value:'3',
-            label:'风险提示'
-          },{
-            value:'4',
-            label:'税收筹划'
-          },{
-            value:'5',
-            label:'解码图'
-          },{
-            value:'6',
-            label:'新闻中心'
-          },{
-            value:'7',
-            label:'精选好课'
-          },{
-            value:'8',
-            label:'直播答疑'
-          },{
-            value:'9',
-            label:'评论'
-          }
-        ],
-        tradeList:[],
-        attributeList:[{
-            value: '1',
-            label: '评论'
-          },{
-            value: '2',
-            label: '回复'
+            label:'总代',
+            value:0,
           },
-        ],
+          {
+            label:'1级',
+            value:1,
+          },
+          {
+            label:'2级',
+            value:2,
+          },
+          {
+            label:'3级',
+            value:3,
+          },
+          {
+            label:'无',
+            value:-1,
+          }
+        ],//等级列表
+        nameList:[],//中心列表
         dataList: [],
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
+        fileListUpload:[],
+        fullscreenLoading: false
       }
     },
     activated () {
       this.getDataList()
     },
+    mounted(){
+      //中心列表
+      this.$http({
+        url: this.$http.adornUrl('/biz/organization/centerListOfNoPaging'),
+        method: 'GET',
+      }).then(({data}) => {
+        this.nameList = data.data
+      })
+    },
     methods: {
+      // 设置管理员
+      setMaganger (id) {
+        this.managerVisible = true
+        this.$nextTick(() => {
+          this.$refs.Maganer.init(id)
+        })
+      },
       // 多选
       selectionChangeHandle (val) {
         this.dataListSelections = val
@@ -220,31 +211,35 @@
       //重置搜索条件
       resetForm(){
         this.dataForm={
-          moudle:'',
-          tradeid:'',
+          id:'',
+          name:'',
           level:'',
-          moudleId:'',
-          content:'',
-          trPolicyTtle:'',
-          trPolicyFileNum:'',
           createTime:'',
-        };
+        }
         this.$refs.child.reset()
       },
+      //排序
+      sortChange (column, prop, order){
+        if(column.order=='descending'){
+          column.order='desc'
+        }
+        if(column.order=='ascending'){
+          column.order='asc'
+        }
+        this.prop=column.prop
+        this.order=column.order
+        this.getDataList ()
+      },
       // 删除
-      deleteHandle (id,status) {
-        var policyId = id ? [id] : this.dataListSelections.map(item => {
-          return item.id
-        });
-        this.$confirm(`您确定要删除${policyId.length > 1 ? '[id=' + policyId.join(',') + ']':'该'}评论吗？`, ``, {
+      deleteHandle (id,name) {
+        this.$confirm(`您确定要删除${name}`, ``, {
           confirmButtonText: `确定`,
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/biz/trdiscuss/delete'),
-            method: 'post',
-            data: this.$http.adornData(policyId,false)
+            url: this.$http.adornUrl('/biz/organization/deleteCenter/'+id),
+            method: 'GET',
           }).then(({data}) => {
             if (data && data.code == 200) {
               this.$message({
@@ -272,25 +267,22 @@
           createTimeStart=this.dataForm.createTime[0]
           createTimeEnd=this.dataForm.createTime[1]
         }
-        this.dataListLoading = true;
+        this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/biz/trdiscuss/list'),
+          url: this.$http.adornUrl('/biz/organization/centerListOfPaging'),
           method: 'get',
           params: this.$http.adornParams({
             'pageNum': String(this.pageIndex),
             'pageSize': String(this.pageSize),
-            'moudle':this.dataForm.moudle|| undefined,
+            'id':this.dataForm.id|| undefined,
+            'name':this.dataForm.name|| undefined,
             'level':this.dataForm.level|| undefined,
-            'moudleId':this.dataForm.moudleId|| undefined,
-            'content':this.dataForm.content|| undefined,
-            'trPolicyTtle':this.dataForm.trPolicyTtle|| undefined,
-            'trPolicyFileNum':this.dataForm.trPolicyFileNum|| undefined,
-            'createTimeStart':createTimeStart || undefined,
-            'createTimeEnd':createTimeEnd || undefined,
+            'start':createTimeStart || undefined,
+            'end':createTimeEnd || undefined,
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
-            this.dataList = data.data.list;
+            this.dataList = data.data.list
             this.totalPage = data.data.totalCount
           } else {
             this.dataList = []
@@ -309,19 +301,11 @@
       currentChangeHandle (val) {
         this.pageIndex = val
         this.getDataList()
-      },
-      //获取模块名称
-      getMoudel:function(val){
-        var list=this.moudelList,i=0,len=list.length;
-        for(;i<len;i++){
-          if(list[i].value==val){
-            return list[i].label;
-          }
-        }
       }
+
     }
   }
 </script>
 <style>
-  .distpicker-address-wrapper select{height: 36px;line-height: 40px;padding:0.15rem 0.75rem}
+
 </style>

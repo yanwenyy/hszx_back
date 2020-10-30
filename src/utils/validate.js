@@ -34,3 +34,8 @@ export function time_change (s) {
   // return s.toLocaleString().split(" ")[0].split("/").join("-")||null;
   return s.toLocaleString().split(" ")[0]||null;
 }
+
+//正整数
+export function isInteger (s) {
+  return /^[1-9]\d*|0$/.test(s)
+}

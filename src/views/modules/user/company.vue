@@ -2,22 +2,63 @@
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
+        <el-input v-model="dataForm.uuid"  placeholder="ID" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
         <el-input v-model="dataForm.phone"  placeholder="手机号" clearable></el-input>
       </el-form-item>
       <el-form-item>
-      <el-input v-model="dataForm.realName" placeholder="真实姓名" clearable></el-input>
+        <el-input v-model="dataForm.nickname"  placeholder="昵称" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+      <el-input v-model="dataForm.realname" placeholder="姓名" clearable></el-input>
     </el-form-item>
       <el-form-item>
-        <el-input v-model="dataForm.userName" placeholder="用户名" clearable></el-input>
+        <el-input v-model="dataForm.companyName" placeholder="企业名称" clearable></el-input>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="dataForm.companyName" placeholder="企业" clearable></el-input>
+        <el-select v-model="dataForm.cityCenterId" placeholder="标记城市中心">
+          <el-option v-for="item in nameList"
+                     :label="item.name"
+                     :value="item.id"
+                     :key="item.id">
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="dataForm.companyId" placeholder="企业id" clearable></el-input>
+        <el-select v-model="dataForm.shareholderId" placeholder="标记股东机构">
+          <el-option
+            v-for="item in gdList"
+            :label="item.name"
+            :value="item.id"
+            :key="item.id">
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
-        <el-select v-model="dataForm.role" placeholder="用户角色">
+        <el-select v-model="dataForm.agencyId" placeholder="标记股代理商">
+          <el-option v-for="item in jxsList"
+                     :label="item.agencyName"
+                     :value="item.agencyId"
+                     :key="item.agencyId">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="邀请人">
+        <el-input v-model="dataForm.invideRealname" placeholder="邀请人" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-select v-model="dataForm.inviteRole" placeholder="邀请人角色">
+          <el-option
+            v-for="item in roleList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-select v-model="dataForm.nowRole" placeholder="用户角色">
           <el-option
             v-for="item in role"
             :key="item.value"
@@ -27,7 +68,7 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-select v-model="dataForm.vipStatus" placeholder="会员状态">
+        <el-select v-model="dataForm.ifTrial" placeholder="是否领取试用">
           <el-option
             v-for="item in vipStatus"
             :key="item.value"
@@ -36,61 +77,25 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item>
-        <el-select v-model="dataForm.trade" placeholder="行业">
-          <el-option
-            v-for="item in trade"
-            :key="item.tradeId"
-            :label="item.tradeName"
-            :value="item.tradeId">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="地区">
-        <el-input v-model="dataForm.city" placeholder="地区" clearable></el-input>
-        <!--<v-distpicker hide-area></v-distpicker>-->
-      </el-form-item>
       <el-form-item label="注册时间:">
         <el-date-picker
-          v-model="dataForm.regStart"
+          v-model="dataForm.jointimeStart"
           type="date"
           value-format="yyyy-MM-dd"
           placeholder="选择日期">
         </el-date-picker>
         <span>--</span>
         <el-date-picker
-          v-model="dataForm.regEnd"
+          v-model="dataForm.jointimeEnd"
           type="date"
           value-format="yyyy-MM-dd"
           placeholder="选择日期">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="加入企业时间:">
-        <el-date-picker
-          v-model="dataForm.bindStart"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="选择日期">
-        </el-date-picker>
-        <span>--</span>
-        <el-date-picker
-          v-model="dataForm.bindEnd"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="选择日期">
-        </el-date-picker>
+      <el-form-item>
+        <el-button type="primary" @click="getDataList()">搜索</el-button>
+        <el-button  type="warning" @click="resetForm('dataForm')">重置</el-button>
       </el-form-item>
-      <div class="seach-btn">
-        <el-form-item>
-          <el-button type="primary" @click="getDataList()">搜索</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button  type="warning" @click="resetForm('dataForm')">重置</el-button>
-        </el-form-item>
-        <!--<el-form-item>
-          <el-button type="warning" @click="">导出</el-button>
-        </el-form-item>-->
-      </div>
     </el-form>
     <el-table
       :data="dataList"
@@ -102,7 +107,7 @@
         type="index"
         header-align="center"
         align="center"
-        label="ID">
+        label="序号">
       </el-table-column>
       <el-table-column
         prop="phone"
@@ -114,67 +119,74 @@
         prop="username"
         header-align="center"
         align="center"
-        label="用户名">
+        label="昵称">
       </el-table-column>
       <el-table-column
         prop="realname"
         header-align="center"
         align="center"
-        label="真实姓名">
-      </el-table-column>
-      <el-table-column
-        prop="companyid"
-        header-align="center"
-        align="center"
-        label="企业ID">
+        label="姓名">
       </el-table-column>
       <el-table-column
         prop="companyname"
         header-align="center"
         align="center"
-        label="企业">
+        label="企业名称">
       </el-table-column>
       <el-table-column
-        prop="role"
+        prop="ifTrial"
         header-align="center"
         align="center"
-        label="用户角色">
-        <template slot-scope="scope"> {{scope.row.role==0?'管理员':'员工'}} </template>
+        label="试用">
+        <template slot-scope="scope"> {{scope.row.ifTrial==0?'否':'是'}} </template>
       </el-table-column>
       <el-table-column
-        prop="province,city"
+        prop="citycenterName"
         header-align="center"
         align="center"
-        label="地区">
-        <template slot-scope="scope"> {{scope.row.province}} {{ scope.row.city!='null'?scope.row.city:''}}</template>
+        label="标记城市中心">
       </el-table-column>
       <el-table-column
-        prop="trade"
+        prop="shareholderName"
         header-align="center"
         align="center"
-        label="行业">
+        label="标记股东机构">
       </el-table-column>
       <el-table-column
-        prop="vipStatus"
+        prop="agencyName"
         header-align="center"
         align="center"
-        label="会员状态">
+        label="标记代理商">
       </el-table-column>
       <el-table-column
-        prop="vaildlasttime"
+        prop="inviteId"
         header-align="center"
         align="center"
-        sortable
-        :formatter="commonDate.formatTime"
-        label="会员截止时间">
+        label="邀请人ID">
       </el-table-column>
       <el-table-column
-        prop="bindingTime"
+        prop="invideRealname"
         header-align="center"
         align="center"
-        sortable
-        :formatter="commonDate.formatTime"
-        label="加入企业时间">
+        label="邀请人">
+      </el-table-column>
+      <el-table-column
+        prop="inviteRole"
+        header-align="center"
+        align="center"
+        label="邀请人角色">
+        <template slot-scope="scope">
+          {{scope.row.inviteRole=='1'?'中心销售':scope.row.inviteRole=='2'?'股东销售':scope.row.inviteRole=='3'?'股东管理员':scope.row.inviteRole=='4'?'经销商销售':scope.row.inviteRole=='5'?'经销商管理员':scope.row.inviteRole=='6'?'代言人':'普通用户'}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="nowRole"
+        header-align="center"
+        align="center"
+        label="用户当前角色">
+        <template slot-scope="scope">
+          {{scope.row.nowRole=='1'?'中心销售':scope.row.nowRole=='2'?'股东销售':scope.row.nowRole=='3'?'股东管理员':scope.row.nowRole=='4'?'经销商销售':scope.row.nowRole=='5'?'经销商管理员':scope.row.nowRole=='6'?'代言人':'普通用户'}}
+        </template>
       </el-table-column>
       <el-table-column
         prop="createtime"
@@ -217,19 +229,24 @@
     data () {
       return {
         dataForm: {
+          uuid: '',
           phone: '',
-          realName: '',
-          userName: '',
+          nickname: '',
+          realname: '',
           companyName: '',
-          companyId: '',
-          role: '',
-          vipStatus: '',
-          trade: '',
-          city: '',
-          regStart: '',
-          regEnd: '',
-          bindStart: '',
-          bindEnd: '',
+          cityCenterId: '',
+          cityCenterOrder: 'asc',
+          shareholderId: '',
+          shareholderOrder: 'asc',
+          agencyId: '',
+          agencyOrder: 'asc',
+          invideRealname: '',
+          inviteRealnameOrder: 'asc',
+          inviteRole: '',
+          nowRole:'',
+          jointimeStart: '',
+          jointimeEnd: '',
+          ifTrial: '',
         },
         dataList: [],
         pageIndex: 1,
@@ -250,13 +267,39 @@
         vipStatus:[//会员状态
           {
             value: '0',
-            label: '有效'
+            label: '否'
           },{
             value: '1',
-            label: '过期'
+            label: '是'
           }
         ],
-        trade:[]//行业
+        roleList:[//会员状态
+          {
+            value: '1',
+            label: '中心销售'
+          },{
+            value: '2',
+            label: '股东销售'
+          },{
+            value: '3',
+            label: '股东管理员'
+          },{
+            value: '4',
+            label: '经销商销售'
+          },{
+            value: '5',
+            label: '经销商管理员'
+          },{
+            value: '6',
+            label: '代言人'
+          },{
+            value: '7',
+            label: '普通用户'
+          },
+        ],
+        nameList:[],
+        gdList:[],
+        jxsList:[],
       }
     },
     components: {
@@ -264,8 +307,28 @@
       AddOrUpdate
     },
     activated () {
+      //中心列表
+      this.$http({
+        url: this.$http.adornUrl('/biz/organization/centerListOfNoPaging'),
+        method: 'GET',
+      }).then(({data}) => {
+        this.nameList = data.data
+      });
+      //股东机构列表
+      this.$http({
+        url: this.$http.adornUrl('/biz/organization/shareholderListOfNoPaging'),
+        method: 'GET',
+      }).then(({data}) => {
+        this.gdList = data.data
+      });
+      //经销商列表
+      this.$http({
+        url: this.$http.adornUrl('/biz/orgTbUser/agentUserListOfNoPaging'),
+        method: 'GET',
+      }).then(({data}) => {
+        this.jxsList = data.data
+      });
       this.getDataList();
-      this.getTrade();
     },
     methods: {
       // 获取数据列表
@@ -277,19 +340,24 @@
           params: this.$http.adornParams({
             'pageNum': this.pageIndex,
             'pageSize': this.pageSize,
+            'uuid': this.dataForm.uuid,
             'phone': this.dataForm.phone,
-            'realName': this.dataForm.realName,
-            'userName': this.dataForm.userName,
+            'nickname': this.dataForm.nickname,
+            'realname': this.dataForm.realname,
             'companyName': this.dataForm.companyName,
-            'companyId': this.dataForm.companyId,
-            'role': this.dataForm.role,
-            'vipStatus': this.dataForm.vipStatus,
-            'trade': this.dataForm.trade,
-            'city': this.dataForm.city,
-            'regStart': this.dataForm.regStart,
-            'regEnd': this.dataForm.regEnd,
-            'bindStart': this.dataForm.bindStart,
-            'bindEnd': this.dataForm.bindEnd
+            'cityCenterId': this.dataForm.cityCenterId,
+            'cityCenterOrder': this.dataForm.cityCenterOrder,
+            'shareholderId': this.dataForm.shareholderId,
+            'shareholderOrder': this.dataForm.shareholderOrder,
+            'agencyId': this.dataForm.agencyId,
+            'agencyOrder': this.dataForm.agencyOrder,
+            'invideRealname': this.dataForm.invideRealname,
+            'inviteRealnameOrder': this.dataForm.inviteRealnameOrder,
+            'inviteRole': this.dataForm.inviteRole,
+            'jointimeStart': this.dataForm.jointimeStart,
+            'jointimeEnd': this.dataForm.jointimeEnd,
+            'nowRole': this.dataForm.nowRole,
+            'ifTrial': this.dataForm.ifTrial,
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
@@ -372,19 +440,24 @@
       // 重置
       resetForm(formName) {
         this.dataForm={
+          uuid: '',
           phone: '',
-          realName: '',
-          userName: '',
+          nickname: '',
+          realname: '',
           companyName: '',
-          companyId: '',
-          role: '',
-          vipStatus: '',
-          trade: '',
-          city: '',
-          regStart: '',
-          regEnd: '',
-          bindStart: '',
-          bindEnd: '',
+          cityCenterId: '',
+          cityCenterOrder: 'asc',
+          shareholderId: '',
+          shareholderOrder: 'asc',
+          agencyId: '',
+          agencyOrder: 'asc',
+          invideRealname: '',
+          inviteRealnameOrder: 'asc',
+          inviteRole: '',
+          nowRole:'',
+          jointimeStart: '',
+          jointimeEnd: '',
+          ifTrial: '',
         }
       },
 

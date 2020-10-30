@@ -9,25 +9,22 @@
       <el-form-item label="企业名称">
         <el-input v-model="companyname" :disabled="true" placeholder="企业名称"></el-input>
       </el-form-item>
-      <el-form-item label="选择商品" prop="goodsid">
-        <el-select v-model="dataForm.goodsid" @change="getPurview" placeholder="选择商品" :disabled="goodsChoice">
+      <el-form-item label="权益名称">
+        <el-input v-model="dataForm.cardType=='1'?'个人版':dataForm.cardType=='2'?'企业版':dataForm.cardType=='3'?'集团版':'无版本'" :disabled="true" placeholder="权益名称"></el-input>
+      </el-form-item>
+      <el-form-item label="选择行业">
+        <el-select v-model="dataForm.tradeId" @change="getPurview" placeholder="选择行业" :disabled="goodsChoice">
           <el-option
-            v-for="item in goodsList"
-            :key="item.goodsId"
-            :label="item.goodsName"
-            :value="item.goodsId">
+            v-for="item in tradeList"
+            :key="item.tradeId"
+            :label="item.tradeName"
+            :value="item.tradeId">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="商品ID" v-show="false">
-        <el-input v-model="dataForm.goodsid" :disabled="true" placeholder="商品ID"></el-input>
-      </el-form-item>
-      <el-form-item label="会员权限">
-        <el-input v-model="dataForm.purview" :disabled="true" placeholder="会员权限"></el-input>
-      </el-form-item>
-      <el-form-item label="会员开始时间" prop="vaildstarttime">
+      <el-form-item label="会员开始时间" prop="vipStartTime">
         <el-date-picker
-          v-model="dataForm.vaildstarttime"
+          v-model="dataForm.vipStartTime"
           type="date"
           @change="vipStart"
           :picker-options="start_Date"
@@ -36,29 +33,14 @@
       </el-form-item>
       <el-form-item label="会员结束时间">
         <el-date-picker
-          v-model="dataForm.vaildlasttime"
+          v-model="dataForm.vipEndTime"
           type="date"
           :disabled="true"
           placeholder="选择日期">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="会员辅导周期">
-        <el-date-picker
-          v-model="dataForm.coachstarttime"
-          type="date"
-          :disabled="true"
-          placeholder="选择日期">
-        </el-date-picker>
-        <span class="date-line">--</span>
-        <el-date-picker
-          v-model="dataForm.coachendtime"
-          type="date"
-          :disabled="true"
-          placeholder="选择日期">
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="付款金额" prop="sum">
-        <el-input type="number" v-model="dataForm.sum" style="width: 400px"   placeholder="付款金额"></el-input>
+      <el-form-item label="付款金额" prop="price">
+        <el-input type="number" v-model="dataForm.price" style="width: 400px"   placeholder="付款金额"></el-input>
         <p style="color: #ccc;margin: 0">请填写小数点后两位如：9800.00</p>
       </el-form-item>
       <el-form-item style="text-align: center;">
@@ -89,96 +71,72 @@
       return {
         start_Date: { //时间限制
           disabledDate: time => {
-            if(this.$route.query.uuid!=undefined){
+            if(this.$route.query.id!=undefined){
               return time.getTime() < Date.now()-8.64e7;
             }
           }
         },
         companyid:this.$route.query.id,
-        uuid:this.$route.query.uuid,
+        tradeId:this.$route.query.tradeId,
         companyname:'',
         vipStatus:this.$route.query.vipStatus,
         txtitle:'新增',
         goodsChoice:false,
         dataForm:{
-          goodsid:'',
-          purview:'',
-          purviewName:'',
-          coachendtime: "",
-          coachstarttime: "",
-          vaildstarttime: "",
-          vaildlasttime: "",
-          sum:''
+          cardType:this.$route.query.cardType,
+          tradeId:'',
+          vipEndTime:'',
+          vipStartTime: "",
+          price: "",
         },
         dataRule:{
           goodsid:[
             { required: true, message: '请选择商品', trigger: 'blur' }
           ],
-          vaildstarttime: [
+          vipStartTime: [
             { required: true, message: '请选择会员开始时间', trigger: 'blur' }
           ],
-          sum: [
+          price: [
             { required: true, message: '请填写付款金额', trigger: 'blur' },
             { validator: validatePrice}
           ]
         },
-        goodsList:[]//商品
+        tradeList:[]//商品
       }
     },
     components: {
       VDistpicker
     },
     mounted(){
-        this.$http({
-          url: this.$http.adornUrl(`/biz/company/info/${this.companyid}`),
-          method: 'get',
-          params: this.$http.adornParams()
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            var datas=data.data;
-            this.companyname = datas.companyname;
-          }
-        });
+      //企业信息
       this.$http({
-        url: this.$http.adornUrl(`/biz/goods/goodlist`),
+        url: this.$http.adornUrl(`/biz/company/info/${this.companyid}`),
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
         if (data && data.code == 200) {
-          this.goodsList = data.data;
+          var datas=data.data;
+          this.companyname = datas.companyname;
         }
       });
-      if(this.uuid!=undefined){
-        this.txtitle='续费'
-        this.$http({
-          url: this.$http.adornUrl(`/biz/orderdetail/info/${this.uuid}`),
-          method: 'get',
-          params: this.$http.adornParams()
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            this.goodsChoice=true
-            this.dataForm.goodsid = data.data.goodsid;
-            this.dataForm.purview = data.data.purview;
-          }
-        }).then(() =>{
-          this.$http({
-            url: this.$http.adornUrl(`/biz/orderdetail/caculateTime`),
-            method: 'post',
-            params: this.$http.adornParams({
-              'goodsId':this.dataForm.goodsid,
-              'companyId':this.companyid
-            })
-          }).then(({data}) => {
-            if (data && data.code == 200) {
-              this.dataForm.vaildstarttime=data.data.vipStart;
-              this.dataForm.vaildlasttime=data.data.vipEnd;
-              this.dataForm.coachstarttime=data.data.coachStart;
-              this.dataForm.coachendtime=data.data.coachEnd;
-            }
-          });
-        });
-
-      }
+      // if(this.tradeId!=undefined){
+      //   this.txtitle='续费'
+      //   this.$http({
+      //     url: this.$http.adornUrl(`/biz/company/companyrightinfo`),
+      //     method: 'get',
+      //     params: this.$http.adornParams({
+      //       companyId:this.companyId,
+      //       tradeId:this.tradeId
+      //     })
+      //   }).then(({data}) => {
+      //     if (data && data.code == 200) {
+      //       this.goodsChoice=true
+      //       this.dataForm.goodsid = data.data.goodsid;
+      //       this.dataForm.purview = data.data.purview;
+      //     }
+      //   })
+      // }
+      this.getTrade();
     },
     methods:{
       vipStatusFn(){
@@ -190,9 +148,9 @@
       },
       // 表单提交
       dataFormSubmit () {
-        var ajaxUrl='/biz/orderdetail/save'
-        if(this.uuid!=undefined){
-          ajaxUrl='/biz/orderdetail/renew'
+        var ajaxUrl='/biz/company/savecompanyright';
+        if(this.tradeId!=undefined){
+          ajaxUrl='/biz/company/companyrightrenew'
         }
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
@@ -201,12 +159,10 @@
               method: 'post',
               data: this.$http.adornData({
                 'companyId':this.companyid,
-                'goodsid':this.dataForm.goodsid,
-                'sum': this.dataForm.sum,
-                'coachendtime': this.dataForm.coachendtime,
-                'coachstarttime': this.dataForm.coachstarttime,
-                'vaildstarttime':this.dataForm.vaildstarttime ,
-                'vaildlasttime': this.dataForm.vaildlasttime,
+                'tradeId': this.dataForm.tradeId,
+                'vipEndTime': this.dataForm.vipEndTime,
+                'vipStartTime':this.dataForm.vipStartTime ,
+                'price': this.dataForm.price,
               })
             }).then(({data}) => {
               if (data && data.code == 200) {
@@ -230,44 +186,66 @@
       closePage:function () {
         this.removeTabHandle(this.$store.state.common.mainTabsActiveName)
       },
-      // 选择商品对应权限
-      getPurview (e){
+      //行业列表
+      getTrade(){
         this.$http({
-          url: this.$http.adornUrl(`/biz/goods/goodinfo/${e}`),
-          method: 'get'
+          url: this.$http.adornUrl(`/biz/trade2/trade2SaleList`),
+          method: 'get',
         }).then(({data}) => {
           if (data && data.code == 200) {
-            this.dataForm.purview = data.data.purview;
+          this.tradeList=data.data
           }
         })
+      },
+      // 选择行业
+      getPurview (e){
+        if(this.dataForm.tradeId!=''){
+          this.$http({
+            url: this.$http.adornUrl(`/biz/company/getvipstarttime`),
+            method: 'get',
+            params: this.$http.adornParams({
+              companyId: this.companyid,
+              tradeId:this.dataForm.tradeId,
+            })
+          }).then(({data}) => {
+            if (data && data.code == 200) {
+              var datas=data.data;
+              this.dataForm.vipStartTime=datas.split(" ")[0];
+              this.$http({
+                url: this.$http.adornUrl('/biz/company/getvipendtime'),
+                method: 'GET',
+                params: this.$http.adornParams({
+                  'vipStart':this.dataForm.vipStartTime
+                })
+              }).then(({data}) => {
+                if (data && data.code == 200) {
+                  this.dataForm.vipEndTime=this.commonDate.formatDate('', '', data.data);
+                }
+              })
+            }
+          });
+        }
       },
 
       //会员时间变化的时候
       vipStart(e){
-        if(this.dataForm.goodsid!=''){
+        if(e){
           var date=e.toLocaleDateString();
           date=date.split("/").join("-");
           this.$http({
-            url: this.$http.adornUrl('/biz/company/calculate'),
-            method: 'get',
+            url: this.$http.adornUrl('/biz/company/getvipendtime'),
+            method: 'GET',
             params: this.$http.adornParams({
-              'vipStart':date,
-              'goodsId':this.dataForm.goodsid
+              'vipStart':date
             })
           }).then(({data}) => {
             if (data && data.code == 200) {
-              this.dataForm.vaildstarttime=this.commonDate.formatDate('', '', data.data.vipStart);
-              this.dataForm.vaildlasttime=this.commonDate.formatDate('', '', data.data.vipEnd);
-              this.dataForm.coachstarttime=this.commonDate.formatDate('', '', data.data.coachStart);
-              this.dataForm.coachendtime=this.commonDate.formatDate('', '', data.data.coachEnd);
+              this.dataForm.vipEndTime=this.commonDate.formatDate('', '', data.data);
             }
           })
-        }else {
-          this.$message.error('请选择商品')
-          this.dataForm.vaildstarttime=''
         }
+      },
 
-      }
     }
   }
 </script>
@@ -299,7 +277,7 @@
     width: 400px!important;
   }
   >>> input[placeholder="选择日期"]{
-    width: 200px!important;
+    width: 250px!important;
   }
   .two-title{
     font-size: 24px;

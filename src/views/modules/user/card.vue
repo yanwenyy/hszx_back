@@ -2,45 +2,41 @@
   <div class="mod-policy">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
-        <el-button type="warning" v-if="isAuth('biz:trpolicyoriginal:save')" @click="$router.push({ name: 'policy-original-add-or-update'})">新增</el-button>
+        <el-button type="warning" v-if="isAuth('biz:trpolicyoriginal:save')" @click="$router.push({ name: 'card-add-or-update'})">新增</el-button>
+        <el-button type="primary" v-if="isAuth('biz:trpolicyoriginal:save')" @click="$router.push({ name: 'card-member-list'})">查看人员列表</el-button>
+      </el-form-item>
+      <el-form-item>
+        <el-input v-model="dataForm.name" placeholder="主体名称" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-select
-          v-model="dataForm.moudle"
+          v-model="dataForm.vipStatus"
           clearable
-          placeholder="模块名称" style="width: 150px">
-          <el-option v-for="item in moudelList"
+          placeholder="会员状态">
+          <el-option v-for="item in vipList"
                      :label="item.label"
                      :value="item.value"
-                     :key="item.value" >
+                     :key="item.label">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-input :disabled="dataForm.moudle==''" v-model="dataForm.moudleId" placeholder="评论主体id" clearable></el-input>
+        <el-input v-model="dataForm.create_by" placeholder="添加人" clearable></el-input>
       </el-form-item>
       <el-form-item>
-        <el-select
-          v-model="dataForm.level"
-          clearable
-          placeholder="属性" style="width: 150px">
-          <el-option v-for="item in attributeList"
-                     :label="item.label"
-                     :value="item.value"
-                     :key="item.value" >
-          </el-option>
-        </el-select>
+        <el-input v-model="dataForm.update_by" placeholder="最近操作人" clearable></el-input>
       </el-form-item>
-      <el-form-item>
-        <el-input v-model="dataForm.content" placeholder="评论内容" clearable></el-input>
+      <el-form-item label="开始时间">
+        <el-date-picker
+          v-model="dataForm.releaseTime"
+          type="daterange"
+          range-separator="一"
+          value-format="yyyy-MM-dd"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期">
+        </el-date-picker>
       </el-form-item>
-      <el-form-item>
-        <el-input v-model="dataForm.trPolicyTtle" placeholder="关联政策标题" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-input v-model="dataForm.trPolicyFileNum" placeholder="关联政策文件号" clearable></el-input>
-      </el-form-item>
-      <el-form-item label="创建时间">
+      <el-form-item label="过期时间">
         <el-date-picker
           v-model="dataForm.createTime"
           type="daterange"
@@ -50,17 +46,17 @@
           end-placeholder="结束日期">
         </el-date-picker>
       </el-form-item>
-
       <el-form-item>
         <el-button type="primary" @click="getDataList()">搜索</el-button>
         <el-button type="info" @click="resetForm()" >重置</el-button>
-        <el-button type="danger" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <!--<el-button type="danger" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>-->
       </el-form-item>
     </el-form>
     <el-table
       :data="dataList"
       border
       v-loading="dataListLoading"
+      @sort-change='sortChange'
       :header-cell-style="{background: 'rgb(21, 161, 147)',color:'#fff'}"
       @selection-change="selectionChangeHandle"
       style="width: 100%;">
@@ -71,56 +67,58 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="moudle"
+        type="index"
         header-align="center"
         align="center"
         width="80"
-        label="模块">
-        <template slot-scope="scope">
-          <span>{{getMoudel(scope.row.moudle)}}</span>
-        </template>
+        label="序号">
       </el-table-column>
       <el-table-column
-        prop="moudleId"
+        prop="name"
         header-align="center"
         align="center"
-        label="评论主体ID">
+        label="主体名称">
       </el-table-column>
       <el-table-column
-        prop="content"
+        prop="personNum"
         header-align="center"
         align="center"
-        width="120px"
-        label="评论内容">
+        label="当前人数">
       </el-table-column>
       <el-table-column
-        prop="level"
-        header-align="center"
-        align="center"
-        label="属性">
-        <template slot-scope="scope">
-          <span>{{scope.row.level==1?'评论':'回复'}}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="userName"
-        header-align="center"
-        align="center"
-        label="评论人">
-      </el-table-column>
-      <el-table-column
-        prop="phone"
-        header-align="center"
-        align="center"
-        label="评论人手机号">
-      </el-table-column>
-      <el-table-column
-        prop="careadateFormat"
+        prop="vipStatus"
         header-align="center"
         align="center"
         width="120px"
-        :formatter="commonDate.formatTime"
-        label="创建时间">
+        label="会员状态">
+      </el-table-column>
+      <el-table-column
+        prop="startTime"
+        header-align="center"
+        align="center"
+        width="120px"
+        label="开始时间">
+      </el-table-column>
+      <el-table-column
+        prop="endTime"
+        header-align="center"
+        align="center"
+        width="120px"
+        label="过期时间">
+      </el-table-column>
+      <el-table-column
+        prop="createBy"
+        header-align="center"
+        align="center"
+        width="120px"
+        label="添加人">
+      </el-table-column>
+      <el-table-column
+        prop="updateBy"
+        header-align="center"
+        align="center"
+        width="120px"
+        label="最近操作人">
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -129,8 +127,9 @@
         width="200"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:info')" @click="$router.push({ name: 'discuss-view',query:{id:scope.row.id} })">查看</el-button>
-          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle(scope.row.id)">删除</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:update')"  @click="$router.push({ name: 'card-member-manage',query:{id:scope.row.id} })">人员管理</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:info')" @click="$router.push({ name: 'card-add-or-update',query:{id:scope.row.id} })">编辑</el-button>
+          <el-button type="text" size="small" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="$router.push({ name: 'card-view',query:{id:scope.row.id} })">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -154,52 +153,25 @@
           token: this.$cookie.get('token')
         },
         dataForm: {
-          moudle:'',
-          level:'',
-          moudleId:'',
-          content:'',
-          trPolicyTtle:'',
-          trPolicyFileNum:'',
+          name:'',
+          vipStatus:'',
+          create_by:'',
+          update_by:'',
           createTime:'',
+          releaseTime:'',
+          endtimeOrder:'asc',
+          personNumOrder:'asc',
         },
-        moudelList:[
+        managerVisible:false,
+        vipList:[
           {
-            value:'1',
-            label:'政策归集'
-          },{
-            value:'2',
-            label:'相关解读'
-          },{
-            value:'3',
-            label:'风险提示'
-          },{
-            value:'4',
-            label:'税收筹划'
-          },{
-            value:'5',
-            label:'解码图'
-          },{
-            value:'6',
-            label:'新闻中心'
-          },{
-            value:'7',
-            label:'精选好课'
-          },{
-            value:'8',
-            label:'直播答疑'
-          },{
-            value:'9',
-            label:'评论'
-          }
-        ],
-        tradeList:[],
-        attributeList:[{
-            value: '1',
-            label: '评论'
-          },{
-            value: '2',
-            label: '回复'
+            label:'过期',
+            value:'1'
           },
+          {
+            label:'有效',
+            value:'2'
+          }
         ],
         dataList: [],
         pageIndex: 1,
@@ -207,12 +179,23 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
+        fileListUpload:[],
+        fullscreenLoading: false
       }
     },
     activated () {
       this.getDataList()
     },
+    mounted(){
+    },
     methods: {
+      // 设置管理员
+      setMaganger (id) {
+        this.managerVisible = true
+        this.$nextTick(() => {
+          this.$refs.Maganer.init(id)
+        })
+      },
       // 多选
       selectionChangeHandle (val) {
         this.dataListSelections = val
@@ -220,29 +203,42 @@
       //重置搜索条件
       resetForm(){
         this.dataForm={
-          moudle:'',
-          tradeid:'',
-          level:'',
-          moudleId:'',
-          content:'',
-          trPolicyTtle:'',
-          trPolicyFileNum:'',
+          name:'',
+          vipStatus:'',
+          create_by:'',
+          update_by:'',
           createTime:'',
-        };
+          releaseTime:'',
+          starttimeOrder:'asc',
+          endtimeOrder:'asc',
+          personNumOrder:'asc',
+        }
         this.$refs.child.reset()
+      },
+      //排序
+      sortChange (column, prop, order){
+        if(column.order=='descending'){
+          column.order='desc'
+        }
+        if(column.order=='ascending'){
+          column.order='asc'
+        }
+        this.prop=column.prop
+        this.order=column.order
+        this.getDataList ()
       },
       // 删除
       deleteHandle (id,status) {
         var policyId = id ? [id] : this.dataListSelections.map(item => {
           return item.id
         });
-        this.$confirm(`您确定要删除${policyId.length > 1 ? '[id=' + policyId.join(',') + ']':'该'}评论吗？`, ``, {
+        this.$confirm(`您确定要删除${policyId.length > 1 ? '[id=' + policyId.join(',') + ']':'该'}卡吗？`, ``, {
           confirmButtonText: `确定`,
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/biz/trdiscuss/delete'),
+            url: this.$http.adornUrl('/delete'),
             method: 'post',
             data: this.$http.adornData(policyId,false)
           }).then(({data}) => {
@@ -267,30 +263,37 @@
       },
       // 获取数据列表
       getDataList () {
-        var createTimeStart='',createTimeEnd='';
+        var releaseStartTime='',releaseLastTime='',createTimeStart='',createTimeEnd=''
+        if(this.dataForm.releaseTime!=undefined&&this.dataForm.releaseTime!=""&&this.dataForm.releaseTime!=null&&this.dataForm.releaseTime.length!=0){
+          releaseStartTime=this.dataForm.releaseTime[0]
+          releaseLastTime=this.dataForm.releaseTime[1]
+        }
         if(this.dataForm.createTime!=undefined&&this.dataForm.createTime!=""&&this.dataForm.createTime!=null&&this.dataForm.createTime.length!=0){
           createTimeStart=this.dataForm.createTime[0]
           createTimeEnd=this.dataForm.createTime[1]
         }
-        this.dataListLoading = true;
+        this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/biz/trdiscuss/list'),
+          url: this.$http.adornUrl('/list'),
           method: 'get',
           params: this.$http.adornParams({
             'pageNum': String(this.pageIndex),
             'pageSize': String(this.pageSize),
-            'moudle':this.dataForm.moudle|| undefined,
-            'level':this.dataForm.level|| undefined,
-            'moudleId':this.dataForm.moudleId|| undefined,
-            'content':this.dataForm.content|| undefined,
-            'trPolicyTtle':this.dataForm.trPolicyTtle|| undefined,
-            'trPolicyFileNum':this.dataForm.trPolicyFileNum|| undefined,
-            'createTimeStart':createTimeStart || undefined,
-            'createTimeEnd':createTimeEnd || undefined,
+            'name':this.dataForm.name|| undefined,
+            'vipStatus':this.dataForm.vipStatus|| undefined,
+            'create_by':this.dataForm.create_by|| undefined,
+            'update_by':this.dataForm.update_by|| undefined,
+            'starttimeStart':releaseStartTime || undefined,
+            'starttimeEnd':releaseLastTime || undefined,
+            'endtimeStart':createTimeStart || undefined,
+            'endtimeEnd':createTimeEnd || undefined,
+            'starttimeOrder':this.dataForm.starttimeOrder|| undefined,
+            'endtimeOrder':this.dataForm.endtimeOrder|| undefined,
+            'personNumOrder':this.dataForm.personNumOrder|| undefined,
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
-            this.dataList = data.data.list;
+            this.dataList = data.data.list
             this.totalPage = data.data.totalCount
           } else {
             this.dataList = []
@@ -309,16 +312,8 @@
       currentChangeHandle (val) {
         this.pageIndex = val
         this.getDataList()
-      },
-      //获取模块名称
-      getMoudel:function(val){
-        var list=this.moudelList,i=0,len=list.length;
-        for(;i<len;i++){
-          if(list[i].value==val){
-            return list[i].label;
-          }
-        }
       }
+
     }
   }
 </script>

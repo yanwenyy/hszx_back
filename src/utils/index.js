@@ -56,3 +56,10 @@ export function clearLoginInfo () {
   store.commit('resetStore')
   router.options.isAddDynamicMenuRoutes = false
 }
+
+export function remove (arr, val) {
+  var index = arr.indexOf(val);
+  if (index > -1) {
+    arr.splice(index, 1);
+  }
+}

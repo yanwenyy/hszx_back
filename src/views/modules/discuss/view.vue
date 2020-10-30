@@ -13,16 +13,16 @@
         <el-input v-model="dataForm.userId" :disabled="true" style="width:220px"></el-input>
       </el-form-item>
       <el-form-item label="创建时间" prop="expertTitle">
-        <el-input v-model="dataForm.careadateFormat" disabled clearable placeholder="请输入解读标题" style="width:500px"></el-input>
+        <el-input v-model="dataForm.careadateFormat" disabled clearable  style="width:500px"></el-input>
       </el-form-item>
       <el-form-item label="评论人" prop="expertTitle">
-        <el-input v-model="dataForm.userName" disabled clearable placeholder="请输入解读标题" style="width:500px"></el-input>
+        <el-input v-model="dataForm.userName" disabled clearable style="width:500px"></el-input>
       </el-form-item>
       <el-form-item label="评论人手机号" prop="expertTitle">
-        <el-input v-model="dataForm.phone" disabled clearable placeholder="请输入解读标题" style="width:500px"></el-input>
+        <el-input v-model="dataForm.phone" disabled clearable  style="width:500px"></el-input>
       </el-form-item>
       <el-form-item label="属性" prop="expertTitle">
-        <el-input v-model="dataForm.levelName" disabled clearable placeholder="请输入解读标题" style="width:500px"></el-input>
+        <el-input v-model="dataForm.levelName" disabled clearable  style="width:500px"></el-input>
       </el-form-item>
       <el-form-item label="评论内容" prop="content">
         <div v-html="dataForm.content" style="border: 1px solid #ccc;padding:0 10px"></div>

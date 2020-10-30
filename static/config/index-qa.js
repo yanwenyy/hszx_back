@@ -5,7 +5,7 @@
   window.SITE_CONFIG = {};
 
   // api接口请求地址
-  window.SITE_CONFIG['baseUrl'] = 'http://test.jieshuibao.com/365gwb_back-1.1.0/';
+  window.SITE_CONFIG['baseUrl'] = 'http://test.jieshuibao.com/tax_star_admin-2.1.1/';
 
   // cdn地址 = 域名 + 版本号
   window.SITE_CONFIG['domain']  = './'; // 域名

@@ -13,24 +13,6 @@
       <el-form-item label="真实姓名" prop="realname" >
         <el-input v-model="dataForm.realname" placeholder="真实姓名"></el-input>
       </el-form-item>
-      <el-form-item label="地区">
-        <v-distpicker hide-area :province="dataForm.province" :city="dataForm.city" @selected="onSelected"></v-distpicker>
-      </el-form-item>
-      <el-form-item label="行业" prop="trade">
-        <el-checkbox-group v-model="dataForm.trade" :max="2">
-          <el-checkbox v-for="item in tradeList" name="trade" :label="item.tradeId" :key="item.tradeId" @change="tradeChange">{{item.tradeName}}</el-checkbox>
-        </el-checkbox-group>
-      </el-form-item>
-      <el-form-item label="职务">
-        <el-select v-model="dataForm.positiotn" placeholder="职务">
-          <el-option
-            v-for="item in positiotnList"
-            :key="item.uuid"
-            :label="item.name"
-            :value="item.uuid">
-          </el-option>
-        </el-select>
-      </el-form-item>
       <el-form-item label="用户角色">
         <el-checkbox-group v-model="dataForm.role">
           <el-checkbox :label="0" disabled>管理层</el-checkbox>

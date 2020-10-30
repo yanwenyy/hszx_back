@@ -18,12 +18,6 @@
       <el-form-item label="地区">
         <el-input v-model="address" :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="行业">
-        <el-input v-model="dataForm.tradeName" :disabled="true" placeholder="行业"></el-input>
-      </el-form-item>
-      <el-form-item label="职务">
-        <el-input v-model="dataForm.positiotn" :disabled="true" placeholder="职务"></el-input>
-      </el-form-item>
       <el-form-item label="注册时间">
         <el-date-picker
           v-model="dataForm.createtime"
@@ -34,6 +28,9 @@
       </el-form-item>
       <el-form-item label="用户角色">
         <el-input v-model="dataForm.role==0?'管理员':'员工'" :disabled="true" placeholder="用户角色"></el-input>
+      </el-form-item>
+      <el-form-item label="用户销售角色">
+        <el-input v-model="dataForm.nowRole=='1'?'中心销售':dataForm.nowRole=='2'?'股东销售':dataForm.nowRole=='3'?'股东管理员':dataForm.nowRole=='4'?'经销商销售':dataForm.nowRole=='5'?'经销商管理员':dataForm.nowRole=='6'?'代言人':'普通用户'" :disabled="true" placeholder="用户角色"></el-input>
       </el-form-item>
       <div class="two-title">企业信息</div>
       <el-form-item label="企业ID">
@@ -50,39 +47,21 @@
           placeholder="选择日期">
         </el-date-picker>
       </el-form-item>
-      <div class="two-title">会员信息</div>
-      <el-form-item label="会员状态">
-        <el-input v-model="dataForm.vipStatus" :disabled="true" placeholder="会员状态"></el-input>
+      <div class="two-title">个人渠道</div>
+      <el-form-item label="城市运营中心">
+        <el-input v-model="dataForm.citycenterName" :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="会员时间" v-if="dataForm.vipStatus!='未开通'">
-        <el-date-picker
-          v-model="dataForm.vaildstarttime"
-          type="date"
-          :disabled="true"
-          placeholder="选择日期">
-        </el-date-picker>
-        <span class="date-line">--</span>
-        <el-date-picker
-          v-model="dataForm.vaildlasttime"
-          type="date"
-          :disabled="true"
-          placeholder="选择日期">
-        </el-date-picker>
+      <el-form-item label="股东机构">
+        <el-input v-model="dataForm.shareholderName" :disabled="true"></el-input>
       </el-form-item>
-      <el-form-item label="会员辅导周期"  v-if="dataForm.vipStatus!='未开通'">
-        <el-date-picker
-          v-model="dataForm.coachstarttime"
-          type="date"
-          :disabled="true"
-          placeholder="选择日期">
-        </el-date-picker>
-        <span class="date-line">--</span>
-        <el-date-picker
-          v-model="dataForm.coachendtime"
-          type="date"
-          :disabled="true"
-          placeholder="选择日期">
-        </el-date-picker>
+      <el-form-item label="经销商机构">
+        <el-input v-model="dataForm.agencyName" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="邀请人">
+        <el-input v-model="dataForm.invideRealname" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="邀请人角色">
+        <el-input v-model="dataForm.inviteRole=='1'?'中心销售':dataForm.inviteRole=='2'?'股东销售':dataForm.inviteRole=='3'?'股东管理员':dataForm.inviteRole=='4'?'经销商销售':dataForm.inviteRole=='5'?'经销商管理员':dataForm.inviteRole=='6'?'代言人':'普通用户'" :disabled="true"></el-input>
       </el-form-item>
       <el-form-item style="text-align: center;">
         <el-button type="info" @click="closePage()">关闭</el-button>

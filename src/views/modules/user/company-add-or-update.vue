@@ -22,23 +22,9 @@
       <el-form-item label="真实姓名" >
         <el-input v-model="dataForm.realname" placeholder="真实姓名"></el-input>
       </el-form-item>
-      <el-form-item label="地区">
-        <v-distpicker hide-area :province="dataForm.province" :city="dataForm.city" @selected="onSelected"></v-distpicker>
-      </el-form-item>
-      <el-form-item label="行业">
-        <el-checkbox-group v-model="dataForm.trade" :max="3">
-          <el-checkbox v-for="item in tradeList" :label="item.tradeId" :key="item.tradeId">{{item.tradeName}}</el-checkbox>
-        </el-checkbox-group>
-      </el-form-item>
-      <el-form-item label="职务">
-        <el-select v-model="dataForm.positiotn" placeholder="职务">
-          <el-option
-            v-for="item in positiotnList"
-            :key="item.uuid"
-            :label="item.name"
-            :value="item.uuid">
-          </el-option>
-        </el-select>
+      <el-form-item label="地区" >
+        <el-input disabled v-model="dataForm.province" style="width: 200px"></el-input>
+        <el-input disabled v-model="dataForm.city" style="width: 200px"></el-input>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -89,8 +75,7 @@
       VDistpicker
     },
     mounted () {
-      this.getTrade()
-      this.getPosition()
+
     },
     methods: {
       init (id) {
@@ -145,15 +130,9 @@
               method: 'post',
               data: this.$http.adornData({
                 'companyid': this.dataForm.companyid,
-                'companyname': this.dataForm.companyname,
-                'uuid': this.dataForm.id,
-                'phone': this.dataForm.phone,
+                'uuid': this.dataForm.uuid,
                 'username': this.dataForm.username,
                 'realname': this.dataForm.realname,
-                'province': this.dataForm.province,
-                'city': this.dataForm.city,
-                'trade': ","+this.dataForm.trade.join(",")+",",
-                'positiotn': this.dataForm.positiotn,
               })
             }).then(({data}) => {
               if (data && data.code == 200) {
@@ -173,45 +152,6 @@
           }
         })
       },
-      // 行业选择
-      handleCheckedCitiesChange(value) {
-        let checkedCount = value.length;
-        this.checkAll = checkedCount === this.cities.length;
-        this.isIndeterminate = checkedCount > 0 && checkedCount < this.cities.length;
-      },
-      // 获取行业
-      getTrade () {
-        this.$http({
-          url: this.$http.adornUrl('/biz/trade/select'),
-          method: 'get'
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            var datas=data.data,i;
-            for(i in datas){
-              datas[i].tradeId=datas[i].tradeId.toString();
-            }
-            this.tradeList = datas;
-          }
-        })
-      },
-      // 获取职务
-      getPosition () {
-        this.$http({
-          url: this.$http.adornUrl('/biz/syscode/select/?category=1'),
-          method: 'get'
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            this.positiotnList = data.data;
-          }
-        })
-      },
-
-      //城市选择
-      onSelected (e) {
-        this.dataForm.province=e.province.value;
-        this.dataForm.city=e.city.value
-      },
-
 
     }
   }

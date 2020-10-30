@@ -11,43 +11,40 @@
         <el-input v-model="dataForm.companyName" placeholder="企业名称" clearable></el-input>
       </el-form-item>
       <el-form-item>
-        <el-select v-model="dataForm.companyNature" placeholder="企业性质">
+        <el-select v-model="dataForm.cityCenterId" placeholder="标记城市中心">
+          <el-option v-for="item in nameList"
+                     :label="item.name"
+                     :value="item.id"
+                     :key="item.id">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-select v-model="dataForm.shareholderId" placeholder="标记股东机构">
           <el-option
-            v-for="item in companyNature"
-            :key="item.uuid"
+            v-for="item in gdList"
             :label="item.name"
-            :value="item.uuid">
+            :value="item.id"
+            :key="item.id">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-select v-model="dataForm.trade" placeholder="行业">
-          <el-option
-            v-for="item in trade"
-            :key="item.tradeId"
-            :label="item.tradeName"
-            :value="item.tradeId">
+        <el-select v-model="dataForm.agencyId" placeholder="标记股代理商">
+          <el-option v-for="item in jxsList"
+                     :label="item.agencyName"
+                     :value="item.agencyId"
+                     :key="item.agencyId">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item>
-        <el-select v-model="dataForm.companyScale" placeholder="规模">
-          <el-option
-            v-for="item in companyScale"
-            :key="item.uuid"
-            :label="item.name"
-            :value="item.uuid">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="地区">
-        <el-input v-model="dataForm.city" placeholder="地区" clearable></el-input>
-        <!--<v-distpicker hide-area></v-distpicker>-->
+      <el-form-item label="邀请人">
+        <el-input v-model="dataForm.inviteRealname" placeholder="邀请人" clearable></el-input>
       </el-form-item>
       <el-form-item>
-        <el-select v-model="dataForm.vipStatus" placeholder="会员状态">
+        <el-select v-model="dataForm.inviteRole" placeholder="邀请人角色">
           <el-option
-            v-for="item in vipStatus"
+            v-for="item in roleList"
             :key="item.value"
             :label="item.label"
             :value="item.value">
@@ -55,33 +52,25 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="dataForm.questionNum" placeholder="问答剩余量" clearable></el-input>
+        <el-select v-model="dataForm.version" placeholder="企业版本">
+          <el-option
+            v-for="item in companyList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
       </el-form-item>
-      <el-form-item label="服务到期时间">
+      <el-form-item label="创建时间：">
         <el-date-picker
-          v-model="dataForm.vaildStartTime"
+          v-model="dataForm.createtimeStart"
           type="date"
           value-format="yyyy-MM-dd"
           placeholder="选择日期">
         </el-date-picker>
         <span>--</span>
         <el-date-picker
-          v-model="dataForm.vaildLastTime"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="选择日期">
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="开通时间：">
-        <el-date-picker
-          v-model="dataForm.createStart"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="选择日期">
-        </el-date-picker>
-        <span>--</span>
-        <el-date-picker
-          v-model="dataForm.createEnd"
+          v-model="dataForm.createtimeEnd"
           type="date"
           value-format="yyyy-MM-dd"
           placeholder="选择日期">
@@ -103,6 +92,7 @@
       :data="dataList"
       border
       v-loading="dataListLoading"
+      :header-cell-style="{background: 'rgb(21, 161, 147)',color:'#fff'}"
       @selection-change="selectionChangeHandle"
       style="width: 100%;">
       <el-table-column
@@ -118,67 +108,46 @@
         label="企业名称">
       </el-table-column>
       <el-table-column
-        prop="companynature"
+        prop="cardType"
         header-align="center"
         align="center"
-        label="企业性质">
+        label="企业版本">
+        <template slot-scope="scope">
+        {{scope.row.cardType=='1'?'个人版':scope.row.cardType=='2'?'企业版':scope.row.cardType=='3'?'集团版':'无版本'}}
+        </template>
       </el-table-column>
       <el-table-column
-        prop="trade"
+        prop="citycenterName"
         header-align="center"
         align="center"
-        label="行业">
+        label="标记城市中心">
       </el-table-column>
       <el-table-column
-        prop="companyscale"
+        prop="shareholderName"
         header-align="center"
         align="center"
-        label="规模">
+        label="标记股东机构">
       </el-table-column>
       <el-table-column
-        prop="city"
+        prop="agencyName"
         header-align="center"
         align="center"
-        label="企业所在地域">
+        label="标记代理商">
       </el-table-column>
       <el-table-column
-        prop="currentStaffNum"
+        prop="inviteRealname"
         header-align="center"
         align="center"
-        label="当前人员数量">
+        label="邀请人">
       </el-table-column>
       <el-table-column
-        prop="laveStaffNum"
+        prop="inviteRole"
         header-align="center"
         align="center"
-        label="可增加人员数量">
-      </el-table-column>
-      <el-table-column
-        prop="vipStatus"
-        header-align="center"
-        align="center"
-        label="会员状态">
-      </el-table-column>
-      <el-table-column
-        prop="questionNum"
-        header-align="center"
-        align="center"
-        label="问答剩余量">
-      </el-table-column>
-      <el-table-column
-        prop="coachEndTime"
-        header-align="center"
-        align="center"
-        :formatter="commonDate.formatTime"
-        label="辅导截止月份">
-      </el-table-column>
-      <el-table-column
-        prop="vaildLastTime"
-        header-align="center"
-        align="center"
-        sortable
-        :formatter="commonDate.formatTime"
-        label="服务到期时间">
+        label="邀请人角色">
+        <template slot-scope="scope">
+          {{scope.row.inviteRole=='1'?'中心销售':scope.row.inviteRole=='2'?'股东销售':scope.row.inviteRole=='3'?'股东管理员':scope.row.inviteRole=='4'?'经销商销售':scope.row.inviteRole=='5'?'经销商管理员':scope.row.inviteRole=='6'?'代言人':'普通用户'}}
+        </template>
       </el-table-column>
       <el-table-column
         prop="createtime"
@@ -186,7 +155,7 @@
         align="center"
         sortable
         :formatter="commonDate.formatTime"
-        label="创建时间">
+        label="企业创建时间">
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -195,7 +164,7 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="$router.push({ name: 'company-account',query:{id:scope.row.uuid} })">账户管理</el-button>
+          <el-button type="text" size="small" @click="$router.push({ name: 'company-account',query:{id:scope.row.uuid ,cardType:scope.row.cardType,personNumber:scope.row.personNumber} })">账户管理</el-button>
           <el-button type="text" size="small" @click="$router.push({ name: 'company-equity',query:{id:scope.row.uuid} })">权益管理</el-button>
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.uuid)">编辑</el-button>
           <el-button type="text" size="small"  @click="$router.push({ name: 'companyManage-view',query:{id:scope.row.uuid} })">查看</el-button>
@@ -225,16 +194,18 @@
         dataForm: {
           uuid:'',
           companyName: '',
-          companyNature: '',
-          trade: '',
-          companyScale: '',
-          city: '',
-          vipStatus: '',
-          vaildStartTime: '',
-          vaildLastTime: '',
-          createStart: '',
-          createEnd: '',
-          questionNum:''
+          cityCenterId: '',
+          cityCenterOrder: 'asc',
+          shareholderId: '',
+          shareholderOrder: 'asc',
+          agencyId: '',
+          agencyOrder: 'asc',
+          inviteRealname: '',
+          inviteRole: '',
+          version: '',
+          createtimeOrder:'asc',
+          createtimeStart:'',
+          createtimeEnd:''
         },
         dataList: [],
         pageIndex: 1,
@@ -252,16 +223,48 @@
             label: '员工'
           }
         ],
-        vipStatus:[//会员状态
+        roleList:[//会员状态
+          {
+            value: '1',
+            label: '中心销售'
+          },{
+            value: '2',
+            label: '股东销售'
+          },{
+            value: '3',
+            label: '股东管理员'
+          },{
+            value: '4',
+            label: '经销商销售'
+          },{
+            value: '5',
+            label: '经销商管理员'
+          },{
+            value: '6',
+            label: '代言人'
+          },{
+            value: '7',
+            label: '普通用户'
+          },
+        ],
+        companyList:[
           {
             value: '0',
-            label: '有效'
+            label: '无版本'
           },{
             value: '1',
-            label: '过期'
-          }
+            label: '个人版'
+          },{
+            value: '2',
+            label: '企业版'
+          },{
+            value: '3',
+            label: '集团版'
+          },
         ],
-        trade:[],//行业
+        nameList:[],
+        gdList:[],
+        jxsList:[],
         companyScale:[],//规模
         companyNature:[],//性质
       }
@@ -271,10 +274,28 @@
       AddOrUpdate
     },
     activated () {
+      //中心列表
+      this.$http({
+        url: this.$http.adornUrl('/biz/organization/centerListOfNoPaging'),
+        method: 'GET',
+      }).then(({data}) => {
+        this.nameList = data.data
+      });
+      //股东机构列表
+      this.$http({
+        url: this.$http.adornUrl('/biz/organization/shareholderListOfNoPaging'),
+        method: 'GET',
+      }).then(({data}) => {
+        this.gdList = data.data
+      });
+      //经销商列表
+      this.$http({
+        url: this.$http.adornUrl('/biz/orgTbUser/agentUserListOfNoPaging'),
+        method: 'GET',
+      }).then(({data}) => {
+        this.jxsList = data.data
+      });
       this.getDataList();
-      this.getTrade();
-      this.getCompanyScale ();
-      this.getCompanyNature();
     },
     methods: {
       // 获取数据列表
@@ -288,16 +309,18 @@
             'pageSize': this.pageSize,
             'uuid':this.dataForm.uuid || undefined,
             'companyName': this.dataForm.companyName || undefined,
-            'companyNature': this.dataForm.companyNature || undefined,
-            'trade': this.dataForm.trade || undefined,
-            'companyScale': this.dataForm.companyScale || undefined,
-            'city': this.dataForm.city || undefined,
-            'vipStatus': this.dataForm.vipStatus || undefined,
-            'vaildStartTime': this.dataForm.vaildStartTime || undefined,
-            'vaildLastTime': this.dataForm.vaildLastTime || undefined,
-            'createStart': this.dataForm.createStart || undefined,
-            'createEnd': this.dataForm.createEnd || undefined,
-            'questionNum':this.dataForm.questionNum || undefined
+            'cityCenterId': this.dataForm.cityCenterId || undefined,
+            'cityCenterOrder': this.dataForm.cityCenterOrder || undefined,
+            'shareholderId': this.dataForm.shareholderId || undefined,
+            'shareholderOrder': this.dataForm.shareholderOrder || undefined,
+            'agencyId': this.dataForm.agencyId || undefined,
+            'agencyOrder': this.dataForm.agencyOrder || undefined,
+            'inviteRealname': this.dataForm.inviteRealname || undefined,
+            'inviteRole': this.dataForm.inviteRole || undefined,
+            'version': this.dataForm.version || undefined,
+            'createtimeOrder':this.dataForm.createtimeOrder || undefined,
+            'createtimeStart':this.dataForm.createtimeStart || undefined,
+            'createtimeEnd':this.dataForm.createtimeEnd || undefined
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
@@ -308,17 +331,6 @@
             this.totalPage = 0
           }
           this.dataListLoading = false
-        })
-      },
-      // 获取行业
-      getTrade (){
-        this.$http({
-          url: this.$http.adornUrl('/biz/trade/select'),
-          method: 'get'
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            this.trade = data.data;
-          }
         })
       },
       // 每页数
@@ -381,19 +393,19 @@
       resetForm(formName) {
         this.dataForm={
           uuid:'',
-          phone: '',
-          realName: '',
-          userName: '',
           companyName: '',
-          companyId: '',
-          role: '',
-          vipStatus: '',
-          trade: '',
-          city: '',
-          regStart: '',
-          regEnd: '',
-          bindStart: '',
-          bindEnd: '',
+          cityCenterId: '',
+          cityCenterOrder: 'asc',
+          shareholderId: '',
+          shareholderOrder: 'asc',
+          agencyId: '',
+          agencyOrder: 'asc',
+          inviteRealname: '',
+          inviteRole: '',
+          version: '',
+          createtimeOrder:'asc',
+          createtimeStart:'',
+          createtimeEnd:''
         }
       },
       // 是否加入企业
@@ -404,28 +416,6 @@
           return '否';
         }
       },
-      // 获取规模
-      getCompanyScale () {
-        this.$http({
-          url: this.$http.adornUrl('/biz/syscode/select/?category=2'),
-          method: 'get'
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            this.companyScale = data.data;
-          }
-        })
-      },
-      // 获取性质
-      getCompanyNature () {
-        this.$http({
-          url: this.$http.adornUrl('/biz/syscode/select/?category=3'),
-          method: 'get'
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            this.companyNature = data.data;
-          }
-        })
-      }
     }
   }
 </script>

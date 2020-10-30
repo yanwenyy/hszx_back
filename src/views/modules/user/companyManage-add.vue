@@ -2,38 +2,78 @@
   <div class="mod-policy-pack">
     <h2 style="border-bottom: 1px solid #ccc;padding-bottom: 20px;margin-bottom: 50px">新增</h2>
     <el-form label-position="left" label-width="100px" :model="dataForm" :rules="dataRule" ref="dataForm">
-      <div class="two-title">企业信息</div>
-      <el-form-item label="企业名称" prop="companyname">
-        <el-input maxlength="20" v-model="dataForm.companyname"   placeholder="企业名称"></el-input>
-      </el-form-item>
-      <el-form-item label="企业性质">
-        <el-select v-model="dataForm.companynature" placeholder="企业性质">
-          <el-option
-            v-for="item in companyNature"
-            :key="item.uuid"
-            :label="item.name"
-            :value="item.uuid">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="规模">
-        <el-select v-model="dataForm.companyscale" placeholder="规模">
-          <el-option
-            v-for="item in companyScale"
-            :key="item.uuid"
-            :label="item.name"
-            :value="item.uuid">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="行业" prop="trade">
-        <el-checkbox-group v-model="dataForm.trade">
-          <el-checkbox v-for="item in tradeList" :label="item.tradeId" name="trade" :key="item.tradeId">{{item.tradeName}}</el-checkbox>
-        </el-checkbox-group>
-      </el-form-item>
-      <el-form-item label="地区">
-        <v-distpicker hide-area :province="dataForm.province" :city="dataForm.city" @selected="onSelected"></v-distpicker>
-      </el-form-item>
+      <div class="city-view-title">企业信息</div>
+      <div class="city-view-box">
+        <el-form-item label="企业名称:" prop="companyname">
+          <el-input maxlength="20" v-model="dataForm.companyname"   placeholder="企业名称"></el-input>
+        </el-form-item>
+        <!--<el-form-item label="企业授权人数:" prop="companyname">-->
+          <!--<el-input maxlength="20" v-model="dataForm.companyname"   placeholder="企业名称"></el-input>-->
+        <!--</el-form-item>-->
+      </div>
+      <div class="city-view-title">分成渠道标记</div>
+      <div class="city-view-box">
+        <el-radio-group v-model="radio" class="radio-list" @change="getRadio">
+          <el-radio :label="1">运营中心</el-radio>
+          <el-radio :label="2">股东</el-radio>
+          <el-radio :label="3">经销商</el-radio>
+        </el-radio-group>
+        <el-form-item  label="城市运营中心:">
+          <el-select
+            :disabled="!(radio==1||radio==2||radio==3)"
+            v-model="dataForm.cityCenterId"
+            clearable
+            @change="zxChange"
+            placeholder="城市运营中心">
+            <el-option v-for="item in zxList"
+                       :label="item.name"
+                       :value="item.id"
+                       :key="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item  label="股东机构:">
+          <el-select
+            :disabled="!(radio==2||radio==3)"
+            v-model="dataForm.shareholderId"
+            clearable
+            @change="gdChange"
+            placeholder="股东机构">
+            <el-option v-for="item in gdList"
+                       :label="item.name"
+                       :value="item.id"
+                       :key="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="经销商机构:">
+          <el-select
+            :disabled="!(radio==3)"
+            v-model="dataForm.agencyId"
+            clearable
+            @change="jxsChange"
+            placeholder="经销商机构">
+            <el-option v-for="item in jxsList"
+                       :label="item.name"
+                       :value="item.id"
+                       :key="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="销售:">
+          <el-select
+            :disabled="!(radio==1||radio==2||radio==3)"
+            v-model="dataForm.inviteId"
+            clearable
+            placeholder="销售">
+            <el-option v-for="item in xsList"
+                       :label="item.realname"
+                       :value="item.uuid"
+                       :key="item.uuid">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </div>
       <el-form-item style="text-align: center;">
         <el-button @click="visible = false">取消</el-button>
         <el-button type="primary" @click="dataFormSubmit()">确定</el-button>
@@ -49,15 +89,13 @@
       return {
         id:this.$route.query.id,
         dataForm:{
-          city: "",
-          coachEndTime: "",
-          coachStartTime: "",
           companyname: "",
-          companynature: "",
-          companyscale: "",
-          province: "",
-          trade: [],
+          cityCenterId: "",
+          shareholderId: "",
+          agencyId: "",
+          inviteId: "",
         },
+        radio:1,
         dataRule:{
           companyname: [
             { required: true, message: '企业名称不能为空', trigger: 'blur' }
@@ -66,41 +104,140 @@
             { type: 'array', required: true, message: '请至少选择一个行业', trigger: 'change' }
           ]
         },
-        tradeList:[],//行业
-        companyScale:[],//规模
-        companyNature:[],//性质
+        zxList:[],//城市运营中心
+        gdList:[],//股东机构
+        jxsList:[],//经销商
+        xsList:[]//销售
       }
     },
     components: {
       VDistpicker
     },
     mounted(){
-      this.getTrade();
-      this.getCompanyScale();
-      this.getCompanyNature();
+      //中心列表
+      this.$http({
+        url: this.$http.adornUrl('/biz/company/organizations'),
+        method: 'GET',
+        params: this.$http.adornParams({
+          'orgId':'',
+          'type': "1",
+        })
+      }).then(({data}) => {
+        this.zxList = data.data
+      });
     },
     methods:{
+      getRadio(){
+        this.zxList=[];
+        this.gdList=[];
+        this.jxsList=[];
+        this.xsList=[];
+        this.dataForm.cityCenterId='';
+        this.dataForm.shareholderId='';
+        this.dataForm.agencyId='';
+        this.dataForm.inviteId='';
+        this.$http({
+          url: this.$http.adornUrl('/biz/company/organizations'),
+          method: 'GET',
+          params: this.$http.adornParams({
+            'orgId':'',
+            'type': "1",
+          })
+        }).then(({data}) => {
+          this.zxList = data.data
+        });
+      },
+      //城市运营中心选择
+      zxChange(){
+        if(this.dataForm.cityCenterId!==''){
+          if(this.radio=='1'){
+            //销售列表
+            this.$http({
+              url: this.$http.adornUrl('/biz/company/organizationSales'),
+              method: 'GET',
+              params: this.$http.adornParams({
+                'orgId':this.dataForm.cityCenterId,
+                'type': "1",
+              })
+            }).then(({data}) => {
+              this.xsList = data.data
+            });
+          }else{
+            //股东机构列表
+            this.$http({
+              url: this.$http.adornUrl('/biz/company/organizations'),
+              method: 'GET',
+              params: this.$http.adornParams({
+                'orgId':this.dataForm.cityCenterId,
+                'type': "2",
+              })
+            }).then(({data}) => {
+              this.gdList = data.data
+            });
+          }
+
+        }
+      },
+      //股东选择
+      gdChange(){
+        if(this.dataForm.shareholderId!==''){
+          if(this.radio=='2'){
+            //销售列表
+            this.$http({
+              url: this.$http.adornUrl('/biz/company/organizationSales'),
+              method: 'GET',
+              params: this.$http.adornParams({
+                'orgId':this.dataForm.shareholderId,
+                'type': "2",
+              })
+            }).then(({data}) => {
+              this.xsList = data.data
+            });
+          }else{
+            //经销商列表
+            this.$http({
+              url: this.$http.adornUrl('/biz/company/organizations'),
+              method: 'GET',
+              params: this.$http.adornParams({
+                'orgId':this.dataForm.shareholderId,
+                'type': "3",
+              })
+            }).then(({data}) => {
+              this.jxsList = data.data
+            });
+          }
+
+        }
+      },
+      //经销商选择
+      jxsChange(){
+        if(this.dataForm.agencyId!==''){
+          //销售列表
+          this.$http({
+            url: this.$http.adornUrl('/biz/company/organizationSales'),
+            method: 'GET',
+            params: this.$http.adornParams({
+              'orgId':this.dataForm.agencyId,
+              'type': "3",
+            })
+          }).then(({data}) => {
+            this.xsList = data.data
+          });
+        }
+      },
       // 表单提交
       dataFormSubmit () {
-        if(this.dataForm.province=="北京市"||this.dataForm.province=="上海市"||this.dataForm.province=="天津市"||this.dataForm.province=="重庆市"){
-          this.dataForm.province = this.dataForm.province.split("市")[0];
-          this.dataForm.city = this.dataForm.city.split("城区")[0];
-        }else{
-          this.dataForm.province = this.dataForm.province.split("省")[0];
-          this.dataForm.city = this.dataForm.city.split("市")[0];
-        }
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({
               url: this.$http.adornUrl(`/biz/company/save`),
               method: 'post',
               data: this.$http.adornData({
-                'city': this.dataForm.city,
                 'companyname': this.dataForm.companyname,
-                'companynature': this.dataForm.companynature,
-                'companyscale': this.dataForm.companyscale,
-                'province': this.dataForm.province,
-                'trade': ","+this.dataForm.trade.join(",")+",",
+                'cityCenterId': this.dataForm.cityCenterId,
+                'shareholderId': this.dataForm.shareholderId,
+                'agencyId': this.dataForm.agencyId,
+                'inviteId': this.dataForm.inviteId,
               })
             }).then(({data}) => {
               if (data && data.code == 200) {
@@ -123,44 +260,6 @@
       },
       closePage:function () {
         this.removeTabHandle(this.$store.state.common.mainTabsActiveName)
-      },
-      //城市选择
-      onSelected (e) {
-        this.dataForm.province=e.province.value;
-        this.dataForm.city=e.city.value
-      },
-      // 获取行业
-      getTrade (){
-        this.$http({
-          url: this.$http.adornUrl('/biz/trade/select'),
-          method: 'get'
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            this.tradeList = data.data;
-          }
-        })
-      },
-      // 获取规模
-      getCompanyScale () {
-        this.$http({
-          url: this.$http.adornUrl('/biz/syscode/select/?category=2'),
-          method: 'get'
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            this.companyScale = data.data;
-          }
-        })
-      },
-      // 获取性质
-      getCompanyNature () {
-        this.$http({
-          url: this.$http.adornUrl('/biz/syscode/select/?category=3'),
-          method: 'get'
-        }).then(({data}) => {
-          if (data && data.code == 200) {
-            this.companyNature = data.data;
-          }
-        })
       },
 
     }
@@ -190,9 +289,6 @@
     height: 122px;
     display: block;
   }
-  >>> input[type="text"]{
-    width: 400px!important;
-  }
   >>> input[placeholder="选择日期"]{
     width: 200px!important;
   }
@@ -203,5 +299,20 @@
   }
   .date-line{
     margin-right: 20px;
+  }
+  .city-view-title{
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  .city-view-box{
+    border:1px solid #ccc;
+    border-radius: 4px;
+    padding:20px;
+    margin-bottom:30px;
+    position: relative
+  }
+  .radio-list{
+    margin-bottom: 20px;
   }
 </style>

@@ -19,6 +19,19 @@
       <el-form-item label="手机号" prop="mobile">
         <el-input v-model="dataForm.mobile" placeholder="手机号"></el-input>
       </el-form-item>
+      <el-form-item size="mini" label="所属机构">
+        <el-tree
+          :props="props"
+          :load="loadNode"
+          lazy
+          node-key="id"
+          ref="menuListTree"
+          show-checkbox
+          :check-strictly="true"
+          :default-checked-keys="orgIds"
+          @check-change="handleCheckChange">
+        </el-tree>
+      </el-form-item>
       <el-form-item label="角色" size="mini" prop="roleIdList">
         <el-checkbox-group v-model="dataForm.roleIdList">
           <el-checkbox v-for="role in roleList" :key="role.roleId" :label="role.roleId">{{ role.roleName }}</el-checkbox>
@@ -46,7 +59,7 @@
 
 <script>
   import { isEmail, isMobile } from '@/utils/validate'
-  import { treeDataTranslate } from '@/utils'
+  import { remove } from '@/utils'
   export default {
     data () {
       var validatePassword = (rule, value, callback) => {
@@ -83,6 +96,13 @@
       return {
         visible: false,
         roleList: [],
+        props: {
+          label: 'name',
+          children: 'name'
+        },
+        count: 1,
+        treeList:[],
+        orgIds:[],
         dataForm: {
           id: 0,
           userName: '',
@@ -97,6 +117,7 @@
           /*companyId: 1,
           companyName: ''*/
         },
+        tempKey: -666666 ,// 临时key, 用于解决tree半选中状态项不能传给后台接口问题. # 待优化
         dataRule: {
           userName: [
             { required: true, message: '用户名不能为空', trigger: 'blur' }
@@ -129,8 +150,65 @@
 
     },
     methods: {
+      handleCheckChange(data, checked, indeterminate) {
+        // console.log(data, checked, indeterminate);
+        var id=data.id;
+        if(checked==true&&this.orgIds.indexOf(id)==-1){
+          this.orgIds.push(id);
+        }else if(checked==false&&this.orgIds.indexOf(id)!=-1){
+          remove(this.orgIds,id)
+        }
+      },
+      handleNodeClick(data) {
+        console.log(data);
+      },
+      loadNode(node, resolve) {
+        if (node.level === 0) {
+          return resolve(this.treeList);
+        }
+        if (node.level > 3) return resolve([]);
+
+        var hasChild;
+        if (node.data.childNum > 0) {
+          hasChild = true;
+        } else if (node.data.childNum <= 0) {
+          hasChild = false;
+        } else {
+          hasChild = Math.random() > 0.5;
+        }
+
+        setTimeout(() => {
+          var data;
+          if (hasChild) {
+            this.$http({
+              url: this.$http.adornUrl('/biz/organization/pidOrgs/'+node.data.id),
+              method: 'get',
+              params: this.$http.adornParams()
+            }).then(({data}) => {
+              data=data.data;
+              resolve(data);
+            });
+          } else {
+            data = [];
+            resolve(data);
+          }
+        }, 500);
+      },
       init (id) {
-        this.dataForm.id = id || 0
+        this.$http({
+          url: this.$http.adornUrl('/biz/organization/allOrgs'),
+          method: 'get',
+          params: this.$http.adornParams()
+        }).then(({data}) => {
+          this.treeList = data.data;
+        }).then(() => {
+          this.visible = true
+          this.$nextTick(() => {
+            this.$refs['dataForm'].resetFields()
+            this.$refs.menuListTree.setCheckedKeys([])
+          })
+        })
+        this.dataForm.id = id || 0;
         this.$http({
           url: this.$http.adornUrl('/sys/role/select'),
           method: 'get',
@@ -160,6 +238,8 @@
                 this.dataForm.mobile = data.user.mobile
                 this.dataForm.roleIdList = data.user.roleIdList
                 this.dataForm.status = data.user.status
+                this.orgIds=data.user.orgIds||[];
+                this.$refs.menuListTree.setCheckedKeys(data.user.orgIds)
                 /*this.dataForm.identity = data.user.identity*/
               }
             })
@@ -168,6 +248,7 @@
       },
       // 表单提交
       dataFormSubmit () {
+        console.log(this.orgIds);
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({
@@ -181,9 +262,10 @@
                 'email': this.dataForm.email,
                 'mobile': this.dataForm.mobile,
                 'status': this.dataForm.status,
-                'roleIdList': this.dataForm.roleIdList/*,
+                'roleIdList': this.dataForm.roleIdList,/*,
                 'identity':this.dataForm.identity*/
                 /*'companyId': this.dataForm.companyId*/
+                'orgIds':this.orgIds
               })
             }).then(({data}) => {
               if (data && data.code === 0) {

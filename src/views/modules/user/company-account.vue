@@ -1,38 +1,39 @@
 <template>
   <div class="mod-policy-pack">
     <h2 style="border-bottom: 1px solid #ccc;padding-bottom: 20px;margin-bottom: 50px">账户管理</h2>
-
-      <div class="two-title">企业人员概况</div>
-      <el-table
-        :data="memberList"
-        border
-        v-loading="dataListLoading"
-        style="width: 100%;margin-bottom: 30px">
-        <el-table-column
-          prop="currentStaffNum"
-          header-align="center"
-          align="center"
-          label="当前人员数量">
-        </el-table-column>
-        <el-table-column
-          prop="adminNum"
-          header-align="center"
-          align="center"
-          label="管理层">
-        </el-table-column>
-        <el-table-column
-          prop="staffNum"
-          header-align="center"
-          align="center"
-          label="员工层">
-        </el-table-column>
-        <el-table-column
-          prop="laveStaffNum"
-          header-align="center"
-          align="center"
-          label="可增加人员数量">
-        </el-table-column>
-      </el-table>
+    <el-form>
+      <el-form-item label="企业版本">
+        <el-input v-model="dataForm.cardType=='1'?'个人版':dataForm.cardType=='2'?'企业版':dataForm.cardType=='3'?'集团版':'无版本'" :disabled="true" placeholder="企业名称"></el-input>
+      </el-form-item>
+      <el-form-item label="版本授权账号数">
+        <el-input v-model="dataForm.personNumber" :disabled="true" placeholder="版本授权账号数"></el-input>
+      </el-form-item>
+    </el-form>
+      <!--<div class="two-title">企业人员概况</div>-->
+      <!--<el-table-->
+        <!--:data="memberList"-->
+        <!--border-->
+        <!--v-loading="dataListLoading"-->
+        <!--style="width: 100%;margin-bottom: 30px">-->
+        <!--<el-table-column-->
+          <!--prop="currentStaffNum"-->
+          <!--header-align="center"-->
+          <!--align="center"-->
+          <!--label="授权人数">-->
+        <!--</el-table-column>-->
+        <!--<el-table-column-->
+          <!--prop="adminNum"-->
+          <!--header-align="center"-->
+          <!--align="center"-->
+          <!--label="管理员余位">-->
+        <!--</el-table-column>-->
+        <!--<el-table-column-->
+          <!--prop="staffNum"-->
+          <!--header-align="center"-->
+          <!--align="center"-->
+          <!--label="员工余位">-->
+        <!--</el-table-column>-->
+      <!--</el-table>-->
       <div class="two-title">
         企业管理层
         <el-button v-if="isAuth('biz:user:save')" type="warning" @click="addOrUpdateHandle(0)" >+ 添加管理员</el-button>
@@ -191,7 +192,10 @@
           {value:1, label:'不跳转'},
           {value:2, label:'H5'},
         ],
-        dataForm: {},
+        dataForm: {
+          cardType:'',
+          personNumber:''
+        },
         memberList:[],
         manageList: [],
         staffList:[],
@@ -209,6 +213,8 @@
       AddOrUpdate
     },
     mounted(){
+      this.dataForm.cardType=this.$route.query.cardType;
+      this.dataForm.personNumber=this.$route.query.personNumber||0;
       if( this.id!=undefined){
         this.$http({
           url: this.$http.adornUrl(`/biz/company/overview/${this.id}`),

@@ -7,6 +7,16 @@
       <el-form-item>
         <el-input v-model="dataForm.nickname" placeholder="昵称" clearable></el-input>
       </el-form-item>
+      <el-form-item>
+        <el-select v-model="dataForm.ifTry" placeholder="是否领取试用" clearable>
+          <el-option
+            v-for="item in ifSy"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="注册时间:">
         <el-date-picker
           v-model="dataForm.start"
@@ -29,9 +39,9 @@
         <el-form-item>
           <el-button  type="warning" @click="resetForm('dataForm')">重置</el-button>
         </el-form-item>
-        <!--<el-form-item>
-          <el-button type="warning" @click="">导出</el-button>
-        </el-form-item>-->
+        <el-form-item>
+          <el-button type="warning" @click="excelDown()">导出</el-button>
+        </el-form-item>
       </div>
     </el-form>
     <el-table
@@ -39,6 +49,7 @@
       border
       v-loading="dataListLoading"
       @selection-change="selectionChangeHandle"
+      :header-cell-style="{background: 'rgb(21, 161, 147)',color:'#fff'}"
       style="width: 100%;">
       <el-table-column
         type="index"
@@ -65,19 +76,68 @@
         label="地区">
       </el-table-column>
       <el-table-column
+        prop="city"
+        header-align="center"
+        align="center"
+        label="企业名称">
+      </el-table-column>
+      <el-table-column
         prop="joinCompany"
         header-align="center"
         align="center"
-        :formatter="jionStatus"
         label="是否加入过企业">
+        <template slot-scope="scope">
+          {{scope.row.joinCompany=='1'?'是':'否'}}
+        </template>
       </el-table-column>
-      <!--<el-table-column
-        prop="ifTrial"
+      <el-table-column
+        prop="citycenterName"
         header-align="center"
         align="center"
-        :formatter="jionStatus"
-        label="是否领取试用">
-      </el-table-column>-->
+        label="标记城市中心">
+      </el-table-column>
+      <el-table-column
+        prop="shareholderName"
+        header-align="center"
+        align="center"
+        label="标记股东机构">
+      </el-table-column>
+      <el-table-column
+        prop="agencyName"
+        header-align="center"
+        align="center"
+        label="标记代理商">
+      </el-table-column>
+      <el-table-column
+        prop="inviteId"
+        header-align="center"
+        align="center"
+        label="邀请人ID">
+      </el-table-column>
+      <el-table-column
+        prop="invideRealname"
+        header-align="center"
+        align="center"
+        label="邀请人">
+      </el-table-column>
+      <el-table-column
+        prop="inviteRole"
+        header-align="center"
+        align="center"
+        label="邀请人角色">
+        <template slot-scope="scope">
+          {{scope.row.inviteRole=='1'?'中心销售':scope.row.inviteRole=='2'?'股东销售':scope.row.inviteRole=='3'?'股东管理员':scope.row.inviteRole=='4'?'经销商销售':scope.row.inviteRole=='5'?'经销商管理员':scope.row.inviteRole=='6'?'代言人':'普通用户'}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="nowRole"
+        header-align="center"
+        align="center"
+        label="用户当前角色">
+        <template slot-scope="scope">
+          {{scope.row.nowRole=='1'?'中心销售':scope.row.nowRole=='2'?'股东销售':scope.row.nowRole=='3'?'股东管理员':scope.row.nowRole=='4'?'经销商销售':scope.row.nowRole=='5'?'经销商管理员':scope.row.nowRole=='6'?'代言人':'普通用户'}}
+        </template>
+      </el-table-column>
       <el-table-column
         prop="createtime"
         header-align="center"
@@ -108,6 +168,15 @@
           start: '',
           end: ''
         },
+        ifSy:[
+          {
+          label:'是',
+          value:1
+           },
+          {
+            label:'否',
+            value:0
+          }],
         dataList: [],
         pageIndex: 1,
         pageSize: 10,
@@ -121,12 +190,12 @@
       this.getDataList()
     },
     methods: {
-      // 获取数据列表
-      getDataList () {
-        this.dataListLoading = true
+      //导出
+      excelDown(){
         this.$http({
-          url: this.$http.adornUrl('/biz/user/generallist'),
+          url: this.$http.adornUrl('/biz/user/exportPerson'),
           method: 'get',
+          responseType: "blob",
           params: this.$http.adornParams({
             'pageNum': this.pageIndex,
             'pageSize': this.pageSize,
@@ -134,6 +203,43 @@
             'nickname': this.dataForm.nickname,
             'start': this.dataForm.start,
             'end': this.dataForm.end
+          })
+        }).then(res => {
+          let content = res.data;
+          let blob = new Blob([content]);
+          let fileName = "普通用户管理导出.xlsx";
+          if ("download" in document.createElement("a")) {
+            // 非IE下载
+            let elink = document.createElement("a");
+            elink.download = fileName;
+            elink.style.display = "none";
+            elink.href = URL.createObjectURL(blob);
+            document.body.appendChild(elink);
+            elink.click();
+            URL.revokeObjectURL(elink.href); // 释放URL 对象
+            document.body.removeChild(elink);
+          } else {
+            // IE10+下载
+            navigator.msSaveBlob(blob, fileName);
+          }
+          this.$message.success("生成文件成功");
+        }).catch(err => {
+          this.$message.error("服务器出现问题,请稍后再试");
+        })
+      },
+      // 获取数据列表
+      getDataList () {
+        this.dataListLoading = true
+        this.$http({
+          url: this.$http.adornUrl('/biz/user/userlist'),
+          method: 'get',
+          params: this.$http.adornParams({
+            'pageNum': this.pageIndex,
+            'pageSize': this.pageSize,
+            'phone': this.dataForm.phone,
+            'nickname': this.dataForm.nickname,
+            'createtimeStart': this.dataForm.start,
+            'createtimeEnd': this.dataForm.end
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
