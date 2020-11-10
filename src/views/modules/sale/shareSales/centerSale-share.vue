@@ -43,7 +43,7 @@
       <el-form-item>
         <el-button type="primary" @click="getDataList()">搜索</el-button>
         <el-button type="info" @click="resetForm()" >重置</el-button>
-        <el-button type="info" @click="resetForm()" >导出</el-button>
+        <el-button type="info" @click="excelDown()" >导出</el-button>
         <!--<el-button type="danger" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>-->
       </el-form-item>
     </el-form>
@@ -88,21 +88,21 @@
         label="所属城市运营中心 ">
       </el-table-column>
       <el-table-column
-        prop="card"
+        prop="card1"
         header-align="center"
         align="center"
         width="120px"
         label="个人版">
       </el-table-column>
       <el-table-column
-        prop="card1"
+        prop="card2"
         header-align="center"
         align="center"
         width="120px"
         label="企业版">
       </el-table-column>
       <el-table-column
-        prop="card2"
+        prop="card3"
         header-align="center"
         align="center"
         width="120px"
@@ -346,6 +346,41 @@
       })
     },
     methods: {
+      //导出
+      excelDown(){
+        this.$http({
+          url: this.$http.adornUrl('/biz/cardaccount/export/userList'),
+          method: 'get',
+          responseType: "blob",
+          params: this.$http.adornParams({
+            'pageNum': String(this.pageIndex),
+            'pageSize': String(this.pageSize),
+            'realName':this.dataForm.realName,
+            'pid':this.dataForm.pid
+          })
+        }).then(res => {
+          let content = res.data;
+          let blob = new Blob([content]);
+          let fileName = "普通用户管理导出.xlsx";
+          if ("download" in document.createElement("a")) {
+            // 非IE下载
+            let elink = document.createElement("a");
+            elink.download = fileName;
+            elink.style.display = "none";
+            elink.href = URL.createObjectURL(blob);
+            document.body.appendChild(elink);
+            elink.click();
+            URL.revokeObjectURL(elink.href); // 释放URL 对象
+            document.body.removeChild(elink);
+          } else {
+            // IE10+下载
+            navigator.msSaveBlob(blob, fileName);
+          }
+          this.$message.success("生成文件成功");
+        }).catch(err => {
+          this.$message.error("服务器出现问题,请稍后再试");
+        })
+      },
       //分成修改弹窗
       eidtShare(item){
         this.editShareVisible=true;

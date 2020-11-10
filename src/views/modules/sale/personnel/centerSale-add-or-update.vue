@@ -168,7 +168,7 @@
               url: this.$http.adornUrl(`/biz/orgTbUser/${!this.dataForm.id ? 'saveCenterUser' : 'updateCenterUser'}`),
               method: 'post',
               data: this.$http.adornData({
-                'id': this.dataForm.id || undefined,
+                'uuid': this.dataForm.id || undefined,
                 'cityCenterId': this.dataForm.cityCenterId,
                 'phone':this.dataForm.phone,
                 'username':this.dataForm.username,

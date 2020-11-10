@@ -32,8 +32,8 @@
           placeholder="所属运营中心" >
           <el-option v-for="item in nameList"
                      :label="item.name"
-                     :value="item.name"
-                     :key="item.name">
+                     :value="item.id"
+                     :key="item.id">
           </el-option>
         </el-select>
       </el-form-item>
@@ -52,7 +52,7 @@
       <el-form-item>
         <el-button type="primary" @click="getDataList()">搜索</el-button>
         <el-button type="info" @click="resetForm()" >重置</el-button>
-        <el-button type="info" @click="resetForm()" >导出</el-button>
+        <el-button type="info" @click="excelDown()" >导出</el-button>
         <!--<el-button type="danger" v-if="isAuth('biz:trpolicyoriginal:delete')" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>-->
       </el-form-item>
     </el-form>
@@ -84,27 +84,27 @@
         label="股东机构名称">
       </el-table-column>
       <el-table-column
-        prop="pidName"
+        prop="ppIdName"
         header-align="center"
         align="center"
         label="所属城市中心">
-      </el-table-column>
-      <el-table-column
-        prop="card"
-        header-align="center"
-        align="center"
-        width="120px"
-        label="个人版">
       </el-table-column>
       <el-table-column
         prop="card1"
         header-align="center"
         align="center"
         width="120px"
-        label="企业版">
+        label="个人版">
       </el-table-column>
       <el-table-column
         prop="card2"
+        header-align="center"
+        align="center"
+        width="120px"
+        label="企业版">
+      </el-table-column>
+      <el-table-column
+        prop="card3"
         header-align="center"
         align="center"
         width="120px"
@@ -117,7 +117,7 @@
         width="120px"
         label="分成状态">
         <template slot-scope="scope">
-          {{scope.row.ifTax==0?'关闭':'开启'}}
+          {{scope.row.ifShare==0?'关闭':'开启'}}
         </template>
       </el-table-column>
       <el-table-column
@@ -372,6 +372,42 @@
       })
     },
     methods: {
+      //导出
+      excelDown(){
+        this.$http({
+          url: this.$http.adornUrl('/biz/cardaccount/export/orgList'),
+          method: 'get',
+          responseType: "blob",
+          params: this.$http.adornParams({
+            'pageNum': String(this.pageIndex),
+            'pageSize': String(this.pageSize),
+            'orgName': this.dataForm.orgName,
+            'pid': this.dataForm.pid,
+            'ifShare': this.dataForm.ifShare
+          })
+        }).then(res => {
+          let content = res.data;
+          let blob = new Blob([content]);
+          let fileName = "普通用户管理导出.xlsx";
+          if ("download" in document.createElement("a")) {
+            // 非IE下载
+            let elink = document.createElement("a");
+            elink.download = fileName;
+            elink.style.display = "none";
+            elink.href = URL.createObjectURL(blob);
+            document.body.appendChild(elink);
+            elink.click();
+            URL.revokeObjectURL(elink.href); // 释放URL 对象
+            document.body.removeChild(elink);
+          } else {
+            // IE10+下载
+            navigator.msSaveBlob(blob, fileName);
+          }
+          this.$message.success("生成文件成功");
+        }).catch(err => {
+          this.$message.error("服务器出现问题,请稍后再试");
+        })
+      },
       //分成修改弹窗
       eidtShare(item){
         this.editShareVisible=true;

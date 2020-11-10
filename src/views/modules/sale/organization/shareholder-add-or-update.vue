@@ -12,6 +12,7 @@
             <el-select
               v-model="dataForm.pid"
               clearable
+              @change="getSale(dataForm.pid)"
               placeholder="中心等级">
               <el-option v-for="item in gdList"
                          :label="item.name"
@@ -151,7 +152,7 @@
           //   datas[i].price=datas[i].shareholderSale;
           // }
           this.cardAccountList = datas;
-          console.log(this.cardAccountList)
+          // console.log(this.cardAccountList)
         });
       }
       // this.cardAccountList=[];
@@ -172,15 +173,9 @@
         url: this.$http.adornUrl('/biz/organization/centerListOfNoPaging'),
         method: 'GET',
       }).then(({data}) => {
-        this.gdList = data.data
+        this.gdList = data.data;
       });
-      //中心销售列表
-      this.$http({
-        url: this.$http.adornUrl('/biz/orgTbUser/centerUserListOfNoPaging'),
-        method: 'GET',
-      }).then(({data}) => {
-        this.xsList = data.data
-      });
+
       this.dataForm.id=this.$route.query.id;
       //详情
       if( this.dataForm.id!=undefined) {
@@ -193,7 +188,7 @@
           this.titleTxt="编辑";
           this.addHide=true;
           this.cardAccountList=datas.cardAccountList?datas.cardAccountList:[];
-          this.dataForm.pid=datas.pid;
+          this.dataForm.pid=datas.ppId;
           this.dataForm.salePersonId=datas.salePersonId;
           this.dataForm.name=datas.name;
           this.dataForm.leader=datas.leader;
@@ -202,10 +197,32 @@
           this.dataForm.createTime=datas.createTime;
           this.dataForm.ifShare=String(datas.ifShare)||"1";
           this.dataForm.ifTax=String(datas.ifTax)||"1'";
+          this.getSale(this.dataForm.pid);
         })
       }
     },
     methods:{
+      //获取中心销售
+      getSale(id){
+        this.dataForm.salePersonId='';
+        this.xsList=[];
+        if(id){
+          //中心销售列表
+          this.$http({
+            url: this.$http.adornUrl('/biz/orgTbUser/centerUserListOfNoPaging'),
+            method: 'GET',
+            params: this.$http.adornParams({
+              cityCenterId:id
+            })
+          }).then(({data}) => {
+            this.xsList=data.data;
+            this.xsList.unshift({
+              realname:'无',
+              uuid:null
+            });
+          });
+        }
+      },
       //提交表单
       dataFormSubmit () {
         this.$refs['dataForm'].validate((valid) => {
@@ -219,7 +236,7 @@
               method: 'post',
               data: this.$http.adornData({
                 'id': this.dataForm.id || undefined,
-                'pid': this.dataForm.pid,
+                'ppId': this.dataForm.pid,
                 'salePersonId': this.dataForm.salePersonId,
                 'name': this.dataForm.name,
                 'leader': this.dataForm.leader,

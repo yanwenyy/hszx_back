@@ -2,7 +2,7 @@
   <div class="mod-policy">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <div class="card-mm-title">致通振业事务所</div>
-      <el-button type="primary" @click="dialogFormVisible=true">添加授权人员</el-button>
+      <el-button type="primary" @click="dialogFormVisible=true,dataForm.phone='',dataForm.username='',dataForm.realname=''">添加授权人员</el-button>
     </el-form>
     <el-table
       :data="dataList"

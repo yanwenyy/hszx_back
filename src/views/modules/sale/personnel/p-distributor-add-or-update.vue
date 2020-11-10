@@ -172,13 +172,14 @@
     methods:{
       //中心运营列表选择
       getGd(){
+        this.dataForm.shareholderId='';
         if(this.dataForm.cityCenterId!==''){
           //股东机构列表
           this.$http({
             url: this.$http.adornUrl('/biz/organization/shareholderListOfNoPaging'),
             method: 'GET',
             params: this.$http.adornParams({
-              pid: this.dataForm.cityCenterId
+              ppId: this.dataForm.cityCenterId
             })
           }).then(({data}) => {
             this.gdList = data.data

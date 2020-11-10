@@ -255,9 +255,9 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/biz/trpolicyoriginal/delete'),
-            method: 'post',
-            data: this.$http.adornData(policyId,false)
+            url: this.$http.adornUrl('/biz/orgTbUser/deleteCenterUser/'+policyId),
+            method: 'GET',
+            // data: this.$http.adornData(policyId,false)
           }).then(({data}) => {
             if (data && data.code == 200) {
               this.$message({

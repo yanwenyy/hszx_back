@@ -11,7 +11,7 @@
             <el-input class="city-input" v-model="dataForm.citycenterName" disabled></el-input>
           </el-form-item>
           <el-form-item label="选择角色">
-            <el-radio disabled v-model="dataForm.nowRole" label="1">股东管理员</el-radio>
+            <el-radio disabled v-model="dataForm.nowRole" label="3">股东管理员</el-radio>
             <el-radio disabled v-model="dataForm.nowRole" label="2">股东销售</el-radio>
             <p class="input-msg">注：机构下最高可设置管理员3人、销售20人；若所选机构人员角色达到最大限制，则不可新增；</p>
           </el-form-item>

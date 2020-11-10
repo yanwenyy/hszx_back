@@ -202,8 +202,8 @@
           this.addHide=true;
           this.dataForm.pType=String(datas.pType);
           this.dataForm.pid=datas.pid;
-          this.dataForm.ppid=datas.ppid;
-          this.dataForm.salePersonId=datas.salePersonId;
+          this.dataForm.ppid=datas.ppId;
+          this.dataForm.salePersonId=String(datas.salePersonId||'');
           this.dataForm.name=datas.name;
           this.dataForm.leader=datas.leader;
           this.dataForm.phone=datas.phone;
@@ -279,7 +279,7 @@
                 'id': this.dataForm.id || undefined,
                 'pType': this.dataForm.pType,
                 'pid':this.dataForm.pid,
-                'ppid':this.dataForm.ppid,
+                'ppId':this.dataForm.ppid,
                 'salePersonId':this.dataForm.salePersonId,
                 'name':this.dataForm.name,
                 'leader':this.dataForm.leader,

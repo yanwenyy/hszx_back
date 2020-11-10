@@ -139,13 +139,13 @@
         label="经销商机构名称">
       </el-table-column>
       <el-table-column
-        prop="pIdName"
+        prop="ppIdName"
         header-align="center"
         align="center"
         label="所属城市中心">
       </el-table-column>
       <el-table-column
-        prop="ppIdName"
+        prop="pIdName"
         header-align="center"
         align="center"
         width="120px"
@@ -182,7 +182,7 @@
         width="120px"
         label="分成状态">
         <template slot-scope="scope">
-          {{scope.row.ifTax==0?'关闭':'开启'}}
+          {{scope.row.ifShare==0?'关闭':'开启'}}
         </template>
       </el-table-column>
       <el-table-column
@@ -391,15 +391,15 @@
         var policyId = id ? [id] : this.dataListSelections.map(item => {
           return item.id
         });
-        this.$confirm(`您确定要删除${policyId.length > 1 ? '[id=' + policyId.join(',') + ']':'该'}政策原文吗？`, ``, {
+        this.$confirm(`您确定要删除${policyId.length > 1 ? '[id=' + policyId.join(',') + ']':'该'}机构吗？`, ``, {
           confirmButtonText: `确定`,
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/biz/organization/deleteAgent'),
-            method: 'post',
-            data: this.$http.adornData(policyId,false)
+            url: this.$http.adornUrl('/biz/organization/deleteAgent/'+id),
+            method: 'get',
+            // data: this.$http.adornData(policyId,false)
           }).then(({data}) => {
             if (data && data.code == 200) {
               this.$message({

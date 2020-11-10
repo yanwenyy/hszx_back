@@ -176,7 +176,7 @@
         align="center"
         label="邀请人角色">
         <template slot-scope="scope">
-          {{scope.row.inviteRole=='1'?'中心销售':scope.row.inviteRole=='2'?'股东销售':scope.row.inviteRole=='3'?'股东管理员':scope.row.inviteRole=='4'?'经销商销售':scope.row.inviteRole=='5'?'经销商管理员':scope.row.inviteRole=='6'?'代言人':'普通用户'}}
+          {{scope.row.inviteId?(scope.row.inviteRole=='1'?'中心销售':scope.row.inviteRole=='2'?'股东销售':scope.row.inviteRole=='3'?'股东管理员':scope.row.inviteRole=='4'?'经销商销售':scope.row.inviteRole=='5'?'经销商管理员':scope.row.inviteRole=='6'?'代言人':'普通用户'):''}}
         </template>
       </el-table-column>
       <el-table-column

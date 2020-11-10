@@ -12,7 +12,7 @@
             <el-input class="city-input" v-model="dataForm.name" disabled></el-input>
           </el-form-item>
           <el-form-item label="等级" prop="expertTitle">
-            <el-input class="city-input" v-model="dataForm.type" disabled></el-input>
+            <el-input class="city-input" v-model="dataForm.level==0?'总代':dataForm.level==1?'1级':dataForm.level==2?'2级':dataForm.level==3?'3级':'无'" disabled></el-input>
           </el-form-item>
           <el-form-item v-show="dataForm.id" label="添加时间" prop="expertTitle">
             <el-input class="city-input" v-model="dataForm.createTime" disabled></el-input>
@@ -37,11 +37,11 @@
           </el-form-item>
           <el-form-item label="代理商数量" prop="expertTitle">
             <el-input class="small-input" v-model="dataForm.agentNum" disabled></el-input>
-            <el-button type="primary" @click="getLook(2,'销售列表')">查看</el-button>
+            <el-button type="primary" @click="getLook(3,'经销商列表')">查看</el-button>
           </el-form-item>
           <el-form-item label="中心销售数量" prop="expertTitle">
             <el-input class="small-input" v-model="dataForm.saleNum" disabled></el-input>
-            <el-button type="primary" @click="getLook(3,'经销商列表')">查看</el-button>
+            <el-button type="primary" @click="getLook(2,'销售列表')">查看</el-button>
           </el-form-item>
         </div>
       </div>
@@ -91,7 +91,7 @@
         v-loading="dataListLoading"
         style="width: 100%;">
         <el-table-column
-          prop="id"
+          type="index"
           header-align="center"
           align="center"
           width="80"
@@ -105,31 +105,37 @@
           label="ID">
         </el-table-column>
         <el-table-column
-          prop="title"
+          prop="name"
           header-align="center"
           align="center"
           label="股东机构名称">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="leader"
           header-align="center"
           align="center"
           label="负责人">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="ifShare"
           header-align="center"
           align="center"
           label="分成状态">
+          <template slot-scope="scope">
+            {{ scope.row.ifShare==0?'关闭':scope.row.ifShare==1?'开启':''}}
+          </template>
         </el-table-column>
         <el-table-column
           prop="fileNum"
           header-align="center"
           align="center"
           label="合同日期">
+          <template slot-scope="scope">
+            {{ scope.row.contractStart+'至'+scope.row.contractEnd}}
+          </template>
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="createTime"
           header-align="center"
           align="center"
           label="添加时间">
@@ -142,39 +148,33 @@
         v-loading="dataListLoading"
         style="width: 100%;">
         <el-table-column
-          prop="id"
+          type="index"
           header-align="center"
           align="center"
           width="80"
           label="序号">
         </el-table-column>
         <el-table-column
-          prop="id"
+          prop="uuid"
           header-align="center"
           align="center"
           width="80"
           label="ID">
         </el-table-column>
         <el-table-column
-          prop="title"
+          prop="realname"
           header-align="center"
           align="center"
           label="真实姓名">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="phone"
           header-align="center"
           align="center"
           label="手机号码">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
-          header-align="center"
-          align="center"
-          label="分成状态">
-        </el-table-column>
-        <el-table-column
-          prop="fileNum"
+          prop="joinTimeOrg"
           header-align="center"
           align="center"
           label="添加时间">
@@ -194,37 +194,43 @@
           label="ID">
         </el-table-column>
         <el-table-column
-          prop="title"
+          prop="name"
           header-align="center"
           align="center"
           label="经销商机构名称">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="ppIdName"
           header-align="center"
           align="center"
           label="所属城市中心">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="pIdName"
           header-align="center"
           align="center"
           label="所属股东">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="ifShare"
           header-align="center"
           align="center"
           label="分成状态">
+          <template slot-scope="scope">
+            {{ scope.row.ifShare==0?'关闭':scope.row.ifShare==1?'开启':''}}
+          </template>
         </el-table-column>
         <el-table-column
           prop="fileNum"
           header-align="center"
           align="center"
           label="合同日期">
+          <template slot-scope="scope">
+            {{ scope.row.contractStart+'至'+scope.row.contractEnd}}
+          </template>
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="createTime"
           header-align="center"
           align="center"
           label="添加时间">
@@ -300,11 +306,11 @@
         this.removeTabHandle(this.$store.state.common.mainTabsActiveName)
       },
       getLook(val,title){
-        var url=val==1?'organization/shareholderListOfNoPaging':val==2?'organization/agentListOfNoPaging':'orgTbUser/centerUserListOfNoPaging';
+        var url=val==1?'organization/shareholderListOfNoPaging':val==3?'organization/agentListOfNoPaging':'orgTbUser/centerUserListOfNoPaging';
         this.$http({
           url: this.$http.adornUrl('/biz/'+url),
           method: 'GET',
-          params: val == 3 ? this.$http.adornParams({ 'cityCenterId': this.id }):this.$http.adornParams({ 'pid': this.id })
+          params: val == 2 ? this.$http.adornParams({ 'cityCenterId': this.id }):this.$http.adornParams({ 'ppId': this.id })
         }).then(({data}) => {
           var datas=data.data;
           if(datas&&datas!=''&&datas!=null){

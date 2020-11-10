@@ -36,7 +36,7 @@
       <!--</el-table>-->
       <div class="two-title">
         企业管理层
-        <el-button v-if="isAuth('biz:user:save')" type="warning" @click="addOrUpdateHandle(0)" >+ 添加管理员</el-button>
+        <el-button v-if="isAuth('biz:user:save')" type="warning" @click="addOrUpdateHandle(1)" >+ 添加管理员</el-button>
       </div>
       <el-table
         :data="manageList"
@@ -81,7 +81,7 @@
           label="行业">
         </el-table-column>
         <el-table-column
-          prop="bindingTime"
+          prop="joinTime"
           header-align="center"
           align="center"
           :formatter="commonDate.formatTime"
@@ -94,14 +94,14 @@
           width="150"
           label="操作">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="deleteHandle(scope.row.uuid,0)">删除</el-button>
-            <el-button type="text" size="small"  @click="$router.push({ name: 'company-view',query:{id:scope.row.uuid} })">查看</el-button>
+            <el-button type="text" size="small" @click="deleteHandle(scope.row.uuid,1)">删除</el-button>
+            <el-button type="text" size="small"  @click="$router.push({ name: 'company-view',query:{id:scope.row.uuid,companyid:scope.row.companyid} })">查看</el-button>
           </template>
         </el-table-column>
       </el-table>
       <div class="two-title" v-if="manageList.length>0">
         企业员工层
-        <el-button v-if="isAuth('biz:user:save')" type="warning" @click="addOrUpdateHandle(1)" >+ 添加员工</el-button>
+        <el-button v-if="isAuth('biz:user:save')" type="warning" @click="addOrUpdateHandle(2)" >+ 添加员工</el-button>
       </div>
       <el-table  v-if="manageList.length>0"
         :data="staffList"
@@ -159,7 +159,7 @@
           width="150"
           label="操作">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="deleteHandle(scope.row.uuid,1)">删除</el-button>
+            <el-button type="text" size="small" @click="deleteHandle(scope.row.uuid,2)">删除</el-button>
             <el-button type="text" size="small"  @click="$router.push({ name: 'company-view',query:{id:scope.row.uuid} })">查看</el-button>
           </template>
         </el-table-column>
@@ -183,7 +183,7 @@
       };
       return {
         imageUrl: '',
-        id:this.$route.query.id,
+        id:'',
         showPos:[
           {value:1, label:'首页'},
           {value:2, label:'评估页'},
@@ -205,16 +205,17 @@
         dataListLoading: false,
         dataListSelections: [],
         addOrUpdateVisible: false,
-        addCode:0,//0刷新管理员,1刷新员工
+        addCode:1,//1刷新管理员,2刷新员工
         addPhone:'',//添加的手机号
       }
     },
     components: {
       AddOrUpdate
     },
-    mounted(){
+    activated(){
+      this.id=this.$route.query.id;
       this.dataForm.cardType=this.$route.query.cardType;
-      this.dataForm.personNumber=this.$route.query.personNumber||0;
+      // this.dataForm.personNumber=this.$route.query.personNumber||0;
       if( this.id!=undefined){
         this.$http({
           url: this.$http.adornUrl(`/biz/company/overview/${this.id}`),
@@ -223,6 +224,7 @@
         }).then(({data}) => {
           if (data && data.code == 200) {
             var datas=data.data;
+            this.dataForm.personNumber=datas.personNumber;
             this.memberList.push(datas);
           }
         });
@@ -238,17 +240,17 @@
       // 获取管理员列表
       getManageList () {
         this.$http({
-          url: this.$http.adornUrl('/biz/user/enterpriselist'),
+          url: this.$http.adornUrl('/biz/company/companyuserlist'),
           method: 'get',
           params: this.$http.adornParams({
-            'pageNum': this.pageIndex,
-            'pageSize': this.pageSize,
+            // 'pageNum': this.pageIndex,
+            // 'pageSize': this.pageSize,
             'companyId': this.id,
-            'role': 0
+            'companyRole': 1
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
-            this.manageList = data.data.list
+            this.manageList = data.data
           }
           this.dataListLoading = false
         })
@@ -256,17 +258,17 @@
       // 获取员工列表
       getStaffList () {
         this.$http({
-          url: this.$http.adornUrl('/biz/user/enterpriselist'),
+          url: this.$http.adornUrl('/biz/company/companyuserlist'),
           method: 'get',
           params: this.$http.adornParams({
             'pageNum': this.pageIndex,
             'pageSize': this.pageSize,
             'companyId': this.id,
-            'role': 1
+            'companyRole': 2
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
-            this.staffList = data.data.list
+            this.staffList = data.data
           }
           this.dataListLoading = false
         })
@@ -280,10 +282,11 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl(`/biz/station/delete/${id}`),
-            method: 'get',
+            url: this.$http.adornUrl(`/biz/company/untiestaffuser`),
+            method: 'GET',
             params: this.$http.adornParams({
-              'companyId': this.id
+              'companyId': this.id,
+              'uuid':id
             })
           }).then(({data}) => {
             if (data && data.code == 200) {
@@ -292,7 +295,7 @@
                 type: 'success',
                 duration: 1500,
                 onClose: () => {
-                  if(this.addCode==0){
+                  if(this.addCode==1){
                     this.getManageList();
                   }else{
                     this.getStaffList();
@@ -310,11 +313,11 @@
         this.addOrUpdateVisible = true;
         this.addCode=id;
         this.$http({
-          url: this.$http.adornUrl(`/biz/station/idleseat`),
+          url: this.$http.adornUrl(`/biz/company/idleseat`),
           method: 'get',
           params: this.$http.adornParams({
               'companyId': this.id,
-              'role': this.addCode
+              'companyRole': this.addCode
           })
         }).then(({data}) => {
           if (data && data.code == 200) {
@@ -326,9 +329,11 @@
               inputErrorMessage: '手机号格式不正确'
             }).then(({ value }) => {
               this.$http({
-                url: this.$http.adornUrl(`/biz/user/companystaff/${value}`),
-                method: 'get',
-                params: this.$http.adornParams()
+                url: this.$http.adornUrl(`/biz/company/searchUser`),
+                method: 'POST',
+                params: this.$http.adornParams({
+                  phone: value
+                })
               }).then(({data}) => {
                 if (data && data.code == 200) {
                   var datas=data.data;
@@ -339,7 +344,7 @@
                            <div>真实姓名： ${datas.realname||"未填写"}</div>
                            <div>企业名称： ${datas.companyname}</div>
                            <div>会员状态：  ${datas.vaildlasttime>new Date().getTime()?'有效':'过期'}</div>
-                           <div>用户角色：  ${datas.role==0?'管理层':'员工层'}</div>
+                           <div>用户角色：  ${this.addCode==1?'管理层':'员工层'}</div>
                         `, '提示', {
                         confirmButtonText: '解绑并添加至当前企业',
                         dangerouslyUseHTMLString: true
@@ -349,7 +354,7 @@
                            <div>手机号码“${value}”已在当前企业，不可重复添加</div>
                            <div>真实姓名： ${datas.realname||"未填写"}</div>
                            <div>企业名称： ${datas.companyname}</div>
-                           <div>用户角色：  ${datas.role==0?'管理层':'员工层'}</div>
+                           <div>用户角色：  ${this.addCode==1?'管理层':'员工层'}</div>
                         `,  {
                             dangerouslyUseHTMLString: true
                           });
@@ -359,16 +364,17 @@
                            <div>手机号码“${value}”为其他企业管理员，不可添加</div>
                            <div>真实姓名： ${datas.realname||"未填写"}</div>
                            <div>企业名称： ${datas.companyname}</div>
-                           <div>会员状态：  ${datas.role==0?'管理层':'员工层'}</div>
+                           <div>会员状态：  ${this.addCode==1?'管理层':'员工层'}</div>
                         `,  {
                               dangerouslyUseHTMLString: true
                             });
                           }else{//员工,可解绑
                             this.$http({
-                              url: this.$http.adornUrl(`/biz/station/delete/${datas.uuid}`),
+                              url: this.$http.adornUrl(`/biz/company/untiestaffuser`),
                               method: 'get',
                               params: this.$http.adornParams({
-                                'companyId': datas.companyid
+                                'companyId': datas.companyid,
+                                'uuid':datas.uuid
                               })
                             }).then(({data}) => {
                               if (data && data.code == 200) {
@@ -413,7 +419,7 @@
       },
       //刷新列表
       getList (){
-        if(this.addCode==0){
+        if(this.addCode==1){
           this.getManageList();
         }else{
           this.getStaffList();

@@ -15,8 +15,8 @@
       </el-form-item>
       <el-form-item label="用户角色">
         <el-checkbox-group v-model="dataForm.role">
-          <el-checkbox :label="0" disabled>管理层</el-checkbox>
-          <el-checkbox :label="1" disabled>员工</el-checkbox>
+          <el-checkbox :label="1" disabled>管理层</el-checkbox>
+          <el-checkbox :label="2" disabled>员工</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
     </el-form>
@@ -44,7 +44,7 @@
           trade: [],
           positiotn: '',
           role: [],
-          roleNum:0,
+          roleNum:1,
         },
         tradeList: [],
         positiotnList:[],
@@ -65,7 +65,7 @@
       VDistpicker
     },
     mounted () {
-      this.getTrade()
+      // this.getTrade()
       this.getPosition()
     },
     methods: {
@@ -133,7 +133,7 @@
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({
-              url: this.$http.adornUrl(`/biz/user/save`),
+              url: this.$http.adornUrl(`/biz/company/addStaffUser`),
               method: 'post',
               data: this.$http.adornData({
                 'companyid': this.dataForm.id,
@@ -143,7 +143,7 @@
                 'province': this.dataForm.province,
                 'city': this.dataForm.city,
                 'positiotn': this.dataForm.positiotn,
-                'role': this.dataForm.roleNum,
+                'companyRole': this.dataForm.roleNum,
                 'trade': ","+this.dataForm.trade.join(",")+","
               })
             }).then(({data}) => {
@@ -164,7 +164,7 @@
                     this.dataForm.trade=[];
                     this.dataForm.positiotn='';
                     this.dataForm.role=[];
-                    this.dataForm.roleNum=0;
+                    this.dataForm.roleNum=1;
                   }
                 })
               } else {

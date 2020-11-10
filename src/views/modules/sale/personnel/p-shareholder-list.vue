@@ -109,7 +109,7 @@
         width="120px"
         label="角色">
         <template slot-scope="scope">
-          {{scope.row.nowRole==1?'股东管理员':'股东销售'}}
+          {{scope.row.nowRole==3?'股东管理员':'股东销售'}}
         </template>
       </el-table-column>
       <el-table-column

@@ -13,10 +13,10 @@
       </el-form-item>
       <el-form-item label="行业会员">
         <div v-show="dataForm.cardType=='0'">
-          <el-button v-for="(item,index) in cardlist" :key="index" type="warning" @click="$router.push({ name: 'company-equity-add',query:{id:$route.query.id,cardType:item.versionType} })" >+{{item.cardName}}</el-button>
+          <el-button v-for="(item,index) in cardlist" :key="index" type="warning" @click="$router.push({ name: 'company-equity-add',query:{id:$route.query.id,cardType:item.versionType,cardId:item.cardId} })" >+{{item.cardName}}</el-button>
         </div>
         <div v-show="dataForm.cardType!='0'">
-          <el-button v-for="(item,index) in cardlist"  :key="index" v-show="item.versionType==dataForm.cardType" type="warning" @click="$router.push({ name: 'company-equity-add',query:{id:$route.query.id,cardType:item.versionType} })" >+{{item.cardName}}</el-button>
+          <el-button v-for="(item,index) in cardlist"  :key="index" v-show="item.versionType==dataForm.cardType" type="warning" @click="$router.push({ name: 'company-equity-add',query:{id:$route.query.id,cardType:item.versionType,cardId:item.cardId} })" >+{{item.cardName}}</el-button>
         </div>
       </el-form-item>
       <el-table
@@ -78,7 +78,7 @@
           align="center"
           label="操作">
           <template slot-scope="scope">
-            <el-button :type="Number(scope.row.status)?'info':'primary'" size="mini" :disabled="Number(scope.row.status) ? true:false" @click="$router.push({ name: 'company-equity-add',query:{id:$route.query.id,tradeId:scope.row.tradeId} })">续费</el-button>
+            <el-button :type="Number(scope.row.status)?'info':'primary'" size="mini" :disabled="Number(scope.row.status) ? true:false" @click="$router.push({ name: 'company-equity-add',query:{id:$route.query.id,tradeId:scope.row.tradeId,cardType:scope.row.cardType,cardId:scope.row.cardId} })">续费</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -106,8 +106,7 @@
         addOrUpdateVisible: false,
       }
     },
-    mounted(){
-
+    activated(){
       this.$http({
           url: this.$http.adornUrl(`/biz/company/info/${this.companyId}`),
           method: 'get',
@@ -127,10 +126,6 @@
           this.cardlist = datas;
         }
       });
-      this.getDataList();
-
-    },
-    activated () {
       this.getDataList();
     },
     methods:{

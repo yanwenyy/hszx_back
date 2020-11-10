@@ -248,7 +248,9 @@
           cityCenterId:'',
           cityCenterOrder:'asc',
           joinSpokemanTimeOrder:'asc',
-          createTime:''
+          createTime:'',
+          searchPhoneNum:'',
+          addForm:{},
         }
         this.$refs.child.reset()
       },

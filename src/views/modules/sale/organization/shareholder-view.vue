@@ -9,7 +9,7 @@
             <el-input class="city-input" v-model="dataFrom.id" disabled></el-input>
           </el-form-item>
           <el-form-item label="城市运营中心">
-            <el-input class="city-input" v-model="dataFrom.pIdName" disabled></el-input>
+            <el-input class="city-input" v-model="dataFrom.ppIdName" disabled></el-input>
           </el-form-item>
           <el-form-item label="股东机构名称">
             <el-input class="city-input" v-model="dataFrom.name" disabled></el-input>
@@ -20,8 +20,8 @@
           <el-form-item label="负责人电话">
             <el-input class="city-input" v-model="dataFrom.phone" disabled></el-input>
           </el-form-item>
-          <el-form-item label="合同过期时间">
-            <!--<span>{{dataFrom.contractStart+"至"+dataFrom.contractEnd}}</span>-->
+          <el-form-item label="合同日期">
+            <span>{{dataFrom.contractStart+"至"+dataFrom.contractEnd}}</span>
           </el-form-item>
           <el-form-item label="添加时间">
             <el-input class="city-input" v-model="dataFrom.createTime" disabled clearable></el-input>
@@ -54,10 +54,10 @@
         <div class="city-view-title">股东小程序端人员 <el-button type="primary" @click="getLook(1,'股东小程序端人员')">查看全部人员</el-button></div>
         <div class="city-view-box">
           <el-form-item label="管理员">
-            <el-input class="city-input" v-model="dataFrom.adminNum" disabled></el-input>
+            <el-input class="city-input" v-model="dataFrom.saleAdminNum" disabled></el-input>
           </el-form-item>
           <el-form-item label="股东销售">
-            <el-input class="city-input" v-model="dataFrom.shareholderNum" disabled></el-input>
+            <el-input class="city-input" v-model="dataFrom.saleNum" disabled></el-input>
           </el-form-item>
         </div>
       </div>
@@ -101,43 +101,46 @@
     <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
       <el-table
         v-show="dialogType==1"
-        :data="dataList"
+        :data="xcxList"
         border
         style="width: 100%;">
         <el-table-column
-          prop="id"
+          type="index"
           header-align="center"
           align="center"
           width="80"
           label="序号">
         </el-table-column>
         <el-table-column
-          prop="id"
+          prop="nowRole"
           header-align="center"
           align="center"
           width="80"
           label="人员角色">
+          <template slot-scope="scope">
+            {{scope.row.nowRole==3?'股东管理员':'股东销售'}}
+          </template>
         </el-table-column>
         <el-table-column
-          prop="title"
+          prop="uuid"
           header-align="center"
           align="center"
           label="用户ID">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="realname"
           header-align="center"
           align="center"
           label="真实姓名">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="phone"
           header-align="center"
           align="center"
           label="手机号">
         </el-table-column>
         <el-table-column
-          prop="fileNum"
+          prop="joinTimeOrg"
           header-align="center"
           align="center"
           label="设置时间">
@@ -156,14 +159,14 @@
         headers: {
           token: this.$cookie.get('token')
         },
-        dataList:[],
+        xcxList:[],
         dialogTitle:'',
         dialogFormVisible:false,
         dialogType:1,
         id:'',
         dataFrom:{
           id:'',
-          pIdName:'',
+          ppIdName:'',
           name:'',
           leader:'',
           phone:'',
@@ -190,21 +193,32 @@
           params: this.$http.adornParams()
         }).then(({data}) => {
           var datas=data.data;
-          that.dataFrom.pIdName=datas.pIdName||'';
+          that.dataFrom.ppIdName=datas.ppIdName||'';
           that.dataFrom.name=datas.name||'';
           that.dataFrom.leader=datas.leader||'';
           that.dataFrom.phone=datas.phone||'';
           that.dataFrom.contractStart=datas.contractStart||'';
           that.dataFrom.contractEnd=datas.contractEnd||'';
           that.dataFrom.createTime=datas.createTime||'';
-          that.dataFrom.ifShare=datas.ifShare||'';
-          that.dataFrom.ifTax=datas.ifTax||'';
-          that.dataFrom.adminNum=datas.adminNum||'';
-          that.dataFrom.shareholderNum=datas.shareholderNum||'';
+          that.dataFrom.ifShare=String(datas.ifShare)||'';
+          that.dataFrom.ifTax=String(datas.ifTax)||'';
+          that.dataFrom.saleNum=datas.saleNum||0;
+          that.dataFrom.saleAdminNum=datas.saleAdminNum||0;
           that.adminList=datas.adminList||[];
           that.cardAccountList=datas.cardAccountList||[];
         })
       }
+
+      //小程序端人员
+      this.$http({
+        url: this.$http.adornUrl('/biz/orgTbUser/shareUserListOfNoPaging'),
+        method: 'GET',
+        params: this.$http.adornParams({
+          shareholderId: this.dataFrom.id
+        })
+      }).then(({data}) => {
+        this.xcxList = data.data
+      });
     },
     methods:{
       closePage:function () {
@@ -245,5 +259,8 @@
   .close-btn{
     text-align: center;
     margin-top: 20px;
+  }
+  .cp-list>div{
+    margin-bottom: 20px;
   }
 </style>

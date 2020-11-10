@@ -60,7 +60,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="销售:">
+        <el-form-item label="销售:" prop="inviteId">
           <el-select
             :disabled="!(radio==1||radio==2||radio==3)"
             v-model="dataForm.inviteId"
@@ -75,7 +75,7 @@
         </el-form-item>
       </div>
       <el-form-item style="text-align: center;">
-        <el-button @click="visible = false">取消</el-button>
+        <el-button @click="closePage()">取消</el-button>
         <el-button type="primary" @click="dataFormSubmit()">确定</el-button>
       </el-form-item>
     </el-form>
@@ -102,6 +102,9 @@
           ],
           trade: [
             { type: 'array', required: true, message: '请至少选择一个行业', trigger: 'change' }
+          ],
+          inviteId: [
+            { required: true, message: '销售不能为空', trigger: 'blur' }
           ]
         },
         zxList:[],//城市运营中心
@@ -119,7 +122,8 @@
         url: this.$http.adornUrl('/biz/company/organizations'),
         method: 'GET',
         params: this.$http.adornParams({
-          'orgId':'',
+          'cityId':this.dataForm.cityCenterId,
+          'shareId':this.dataForm.shareholderId,
           'type': "1",
         })
       }).then(({data}) => {
@@ -140,7 +144,8 @@
           url: this.$http.adornUrl('/biz/company/organizations'),
           method: 'GET',
           params: this.$http.adornParams({
-            'orgId':'',
+            'cityId':this.dataForm.cityCenterId,
+            'shareId':this.dataForm.shareholderId,
             'type': "1",
           })
         }).then(({data}) => {
@@ -149,6 +154,9 @@
       },
       //城市运营中心选择
       zxChange(){
+        this.dataForm.shareholderId='';
+        this.dataForm.agencyId='';
+        this.dataForm.inviteId='';
         if(this.dataForm.cityCenterId!==''){
           if(this.radio=='1'){
             //销售列表
@@ -160,7 +168,8 @@
                 'type': "1",
               })
             }).then(({data}) => {
-              this.xsList = data.data
+              this.xsList = data.data;
+
             });
           }else{
             //股东机构列表
@@ -168,11 +177,13 @@
               url: this.$http.adornUrl('/biz/company/organizations'),
               method: 'GET',
               params: this.$http.adornParams({
-                'orgId':this.dataForm.cityCenterId,
+                'cityId':this.dataForm.cityCenterId,
+                'shareId':this.dataForm.shareholderId,
                 'type': "2",
               })
             }).then(({data}) => {
-              this.gdList = data.data
+              this.gdList = data.data;
+
             });
           }
 
@@ -180,6 +191,7 @@
       },
       //股东选择
       gdChange(){
+        this.dataForm.inviteId='';
         if(this.dataForm.shareholderId!==''){
           if(this.radio=='2'){
             //销售列表
@@ -191,7 +203,8 @@
                 'type': "2",
               })
             }).then(({data}) => {
-              this.xsList = data.data
+              this.xsList = data.data;
+
             });
           }else{
             //经销商列表
@@ -199,7 +212,8 @@
               url: this.$http.adornUrl('/biz/company/organizations'),
               method: 'GET',
               params: this.$http.adornParams({
-                'orgId':this.dataForm.shareholderId,
+                'cityId':this.dataForm.cityCenterId,
+                'shareId':this.dataForm.shareholderId,
                 'type': "3",
               })
             }).then(({data}) => {
@@ -211,6 +225,7 @@
       },
       //经销商选择
       jxsChange(){
+        this.dataForm.inviteId='';
         if(this.dataForm.agencyId!==''){
           //销售列表
           this.$http({
@@ -221,7 +236,8 @@
               'type': "3",
             })
           }).then(({data}) => {
-            this.xsList = data.data
+            this.xsList = data.data;
+
           });
         }
       },

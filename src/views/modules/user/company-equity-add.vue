@@ -72,12 +72,13 @@
         start_Date: { //时间限制
           disabledDate: time => {
             if(this.$route.query.id!=undefined){
-              return time.getTime() < Date.now()-8.64e7;
+              return time.getTime() < Date.now()-8.64e7||time.getTime() > Date.now() + 2*8.64e7;
             }
           }
         },
         companyid:this.$route.query.id,
         tradeId:this.$route.query.tradeId,
+        cardId:'',
         companyname:'',
         vipStatus:this.$route.query.vipStatus,
         txtitle:'新增',
@@ -108,6 +109,7 @@
       VDistpicker
     },
     mounted(){
+      this.cardId=this.$route.query.cardId;
       //企业信息
       this.$http({
         url: this.$http.adornUrl(`/biz/company/info/${this.companyid}`),
@@ -152,6 +154,7 @@
         if(this.tradeId!=undefined){
           ajaxUrl='/biz/company/companyrightrenew'
         }
+        // console.log(this.commonDate.formatTime('', '', this.dataForm.vipStartTime))
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({
@@ -161,8 +164,9 @@
                 'companyId':this.companyid,
                 'tradeId': this.dataForm.tradeId,
                 'vipEndTime': this.dataForm.vipEndTime,
-                'vipStartTime':this.dataForm.vipStartTime ,
+                'vipStartTime':this.commonDate.formatTime('', '', this.dataForm.vipStartTime).split(' ')[0],
                 'price': this.dataForm.price,
+                'cardId': this.cardId
               })
             }).then(({data}) => {
               if (data && data.code == 200) {
@@ -189,7 +193,7 @@
       //行业列表
       getTrade(){
         this.$http({
-          url: this.$http.adornUrl(`/biz/trade2/trade2SaleList`),
+          url: this.$http.adornUrl(`/biz/trade2/${this.tradeId!=undefined?'buytrades':'nobuytrades'}/${this.companyid}`),
           method: 'get',
         }).then(({data}) => {
           if (data && data.code == 200) {

@@ -12,10 +12,10 @@
             <el-input class="city-input" v-model="dataForm.pType==0?'无':dataForm.pType==1?'城市中心':'股东'" disabled></el-input>
           </el-form-item>
           <el-form-item label="所属城市运营中心" prop="expertTitle">
-            <el-input class="city-input" v-model="dataForm.pIdName" disabled></el-input>
+            <el-input class="city-input" v-model="dataForm.ppIdName" disabled></el-input>
           </el-form-item>
           <el-form-item label="所属股东" prop="expertTitle">
-            <el-input class="city-input" v-model="dataForm.ppIdName" disabled></el-input>
+            <el-input class="city-input" v-model="dataForm.pIdName" disabled></el-input>
           </el-form-item>
           <el-form-item label="所属销售" prop="expertTitle">
             <el-input class="city-input" v-model="dataForm.id" disabled></el-input>
@@ -213,6 +213,8 @@
           this.titleTxt="编辑";
           this.addHide=true;
           this.dataForm=datas;
+          this.dataForm.ifShare=String(datas.ifShare);
+          this.dataForm.ifTax=String(datas.ifTax);
           this.dataForm.releaseTime=[datas.contractStart||'',datas.contractEnd||''];
         })
       }

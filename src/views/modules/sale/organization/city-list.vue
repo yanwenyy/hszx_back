@@ -154,23 +154,23 @@
         djList:[
           {
             label:'总代',
-            value:0,
+            value: '0',
           },
           {
             label:'1级',
-            value:1,
+            value:'1',
           },
           {
             label:'2级',
-            value:2,
+            value:'2',
           },
           {
             label:'3级',
-            value:3,
+            value:'3',
           },
           {
             label:'无',
-            value:-1,
+            value:'-1',
           }
         ],//等级列表
         nameList:[],//中心列表

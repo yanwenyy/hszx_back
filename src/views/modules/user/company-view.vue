@@ -27,7 +27,7 @@
         </el-date-picker>
       </el-form-item>
       <el-form-item label="用户角色">
-        <el-input v-model="dataForm.role==0?'管理员':'员工'" :disabled="true" placeholder="用户角色"></el-input>
+        <el-input v-model="dataForm.role==1?'管理员':'员工'" :disabled="true" placeholder="用户角色"></el-input>
       </el-form-item>
       <el-form-item label="用户销售角色">
         <el-input v-model="dataForm.nowRole=='1'?'中心销售':dataForm.nowRole=='2'?'股东销售':dataForm.nowRole=='3'?'股东管理员':dataForm.nowRole=='4'?'经销商销售':dataForm.nowRole=='5'?'经销商管理员':dataForm.nowRole=='6'?'代言人':'普通用户'" :disabled="true" placeholder="用户角色"></el-input>
@@ -41,7 +41,7 @@
       </el-form-item>
       <el-form-item label="加入企业时间">
         <el-date-picker
-          v-model="dataForm.bindingTime"
+          v-model="dataForm.joinTime"
           type="date"
           :disabled="true"
           placeholder="选择日期">
@@ -49,19 +49,19 @@
       </el-form-item>
       <div class="two-title">个人渠道</div>
       <el-form-item label="城市运营中心">
-        <el-input v-model="dataForm.citycenterName" :disabled="true"></el-input>
+        <el-input v-model="jgForm.citycenterName" :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="股东机构">
-        <el-input v-model="dataForm.shareholderName" :disabled="true"></el-input>
+        <el-input v-model="jgForm.shareholderName" :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="经销商机构">
-        <el-input v-model="dataForm.agencyName" :disabled="true"></el-input>
+        <el-input v-model="jgForm.agencyName" :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="邀请人">
-        <el-input v-model="dataForm.invideRealname" :disabled="true"></el-input>
+        <el-input v-model="jgForm.invideRealname" :disabled="true"></el-input>
       </el-form-item>
       <el-form-item label="邀请人角色">
-        <el-input v-model="dataForm.inviteRole=='1'?'中心销售':dataForm.inviteRole=='2'?'股东销售':dataForm.inviteRole=='3'?'股东管理员':dataForm.inviteRole=='4'?'经销商销售':dataForm.inviteRole=='5'?'经销商管理员':dataForm.inviteRole=='6'?'代言人':'普通用户'" :disabled="true"></el-input>
+        <el-input v-model="jgForm.inviteRole=='1'?'中心销售':dataForm.inviteRole=='2'?'股东销售':dataForm.inviteRole=='3'?'股东管理员':dataForm.inviteRole=='4'?'经销商销售':dataForm.inviteRole=='5'?'经销商管理员':dataForm.inviteRole=='6'?'代言人':'普通用户'" :disabled="true"></el-input>
       </el-form-item>
       <el-form-item style="text-align: center;">
         <el-button type="info" @click="closePage()">关闭</el-button>
@@ -85,12 +85,17 @@
         address:'',
         imageUrl: '',
         id:this.$route.query.id,
+        companyid:'',
         dataForm:{
+
+        },
+        jgForm:{
 
         }
       }
     },
     mounted(){
+      this.companyid=this.$route.query.companyid;
       if( this.id!=undefined){
         this.$http({
           url: this.$http.adornUrl(`/biz/user/info/${this.id}`),
@@ -104,8 +109,21 @@
               this.address=this.dataForm.province+this.dataForm.city
             }
           }
-
         })
+        //机构信息
+        this.$http({
+          url: this.$http.adornUrl(`/biz/company/info/${this.companyid}`),
+          method: 'get',
+        }).then(({data}) => {
+          if (data && data.code == 200) {
+            var datas=data.data;
+            this.jgForm.citycenterName = datas.citycenterName;
+            this.jgForm.shareholderName = datas.shareholderName;
+            this.jgForm.agencyName = datas.agencyName;
+            this.jgForm.invideRealname = datas.inviteRealname;
+            this.jgForm.inviteRole = datas.inviteRole;
+          }
+        });
       }
 
     },
